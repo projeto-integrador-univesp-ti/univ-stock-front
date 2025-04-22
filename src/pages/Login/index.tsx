@@ -1,8 +1,13 @@
 import { EnterIcon } from "@radix-ui/react-icons";
 import { Button, Card, Flex, Link, Text, TextField } from "@radix-ui/themes";
+import { useNavigate } from "react-router-dom";
+import { Path } from "../../router";
 import { BackgroundImage } from "../../utils/BackgroundImage";
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const redirect = () => navigate(Path.Dashboard);
+
   return (
     <Flex
       direction="column"
@@ -57,7 +62,7 @@ const Login: React.FC = () => {
             />
           </Flex>
 
-          <Button variant="solid" style={{ width: "100%" }}>
+          <Button variant="solid" style={{ width: "100%" }} onClick={redirect}>
             Entrar <EnterIcon />
           </Button>
         </Card>
