@@ -1,16 +1,11 @@
-import {
-  Button,
-  Card,
-  Flex,
-  Heading,
-  RadioCards
-} from "@radix-ui/themes";
+import { Button, Card, Flex, Heading, RadioCards } from "@radix-ui/themes";
 import {
   AccentColors,
   Appearances,
   Scalings,
   useGlobalContext,
 } from "../../contexts/GlobalContext";
+import { TopBarInformation } from "../../components/TopBarInformation";
 
 const Settings = () => {
   const {
@@ -35,9 +30,10 @@ const Settings = () => {
 
   return (
     <Flex direction="column" gap="4">
+      <TopBarInformation title="Configurações" />
       <Card>
         <Flex direction="column" gap="4">
-          <Heading as="h2" size="4">
+          <Heading as="h2" size="3">
             Aparência
           </Heading>
           <RadioCards.Root
@@ -57,7 +53,7 @@ const Settings = () => {
 
       <Card>
         <Flex direction="column" gap="4">
-          <Heading as="h2" size="4">
+          <Heading as="h2" size="3">
             Escala (Zoom)
           </Heading>
           <RadioCards.Root
@@ -75,7 +71,7 @@ const Settings = () => {
 
       <Card>
         <Flex direction="column" gap="4">
-          <Heading as="h2" size="4">
+          <Heading as="h2" size="3">
             Transparência (Zoom)
           </Heading>
           <RadioCards.Root
@@ -111,4 +107,3 @@ const Settings = () => {
 };
 
 export { Settings };
-

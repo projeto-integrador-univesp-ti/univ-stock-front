@@ -9,7 +9,7 @@ const TopBarInformation: React.FC<TopBarInformationProps> = (props) => {
   const { title } = props;
   return (
     <Flex direction="column" gap="3" justify="start">
-      <Card mb="4">
+      <Card>
         <Flex justify="between">
           <Text as="p" size="3" style={{ width: "10%" }}>
             Maria Silva
@@ -18,9 +18,9 @@ const TopBarInformation: React.FC<TopBarInformationProps> = (props) => {
             as="p"
             size="3"
             weight="medium"
-            style={{ color: "var(--accent-indicator)" }}
+            style={{ color: "var(--accent-10)" }}
           >
-            {title.toUpperCase()}
+            {title}
           </Text>
           <Clock style={{ width: "10%", textAlign: "right" }} />
         </Flex>

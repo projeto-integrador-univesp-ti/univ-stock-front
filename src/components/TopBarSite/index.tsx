@@ -17,7 +17,13 @@ const TopBarSite: React.FC = () => {
   const { appearance } = useGlobalContext();
 
   return (
-    <Flex align="center" justify="between" p="4" mb="1">
+    <Flex
+      p="4"
+      height="64px"
+      align="center"
+      justify="between"
+      style={{ boxSizing: "border-box", boxShadow: `var(--shadow-${appearance === 'dark' ? 2 : 1})` }}
+    >
       <Flex gap="3" align="center">
         {location.pathname !== Path.Dashboard && (
           <Button
@@ -30,7 +36,11 @@ const TopBarSite: React.FC = () => {
             <ArrowLeftIcon width="15" height="15" />
           </Button>
         )}
-        <ArchiveIcon width="20" height="20" color={appearance === 'dark' ? "white" : "black" } />
+        <ArchiveIcon
+          width="20"
+          height="20"
+          color={appearance === "dark" ? "white" : "black"}
+        />
         <Text weight="bold" size="4">
           Mini Stock
         </Text>
