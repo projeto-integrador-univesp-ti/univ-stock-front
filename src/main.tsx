@@ -1,15 +1,15 @@
-import { Theme } from "@radix-ui/themes";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Router } from "./router";
 
 import "@radix-ui/themes/styles.css";
+import { GlobalProvider } from "./contexts/GlobalContext";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Theme accentColor="iris" grayColor="slate" radius="small" scaling="100%" appearance="dark" panelBackground="translucent">
+    <GlobalProvider>
       <Router />
-    </Theme>
+    </GlobalProvider>
   </StrictMode>
 );

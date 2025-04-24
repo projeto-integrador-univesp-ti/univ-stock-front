@@ -1,18 +1,20 @@
 import { ValueNoneIcon } from "@radix-ui/react-icons";
 import {
-    Box,
-    Button,
-    Card,
-    Flex,
-    Grid,
-    Heading,
-    ScrollArea,
-    SegmentedControl,
-    Text,
+  Box,
+  Button,
+  Card,
+  Flex,
+  Grid,
+  Heading,
+  ScrollArea,
+  SegmentedControl,
+  Text,
 } from "@radix-ui/themes";
 import { useState } from "react";
-import { Clock } from "../../components/Clock";
+import { useNavigate } from "react-router-dom";
 import { ScrollLine } from "../../components/ScrollLine";
+import { TopBarInformation } from "../../components/TopBarInformation";
+import { Path } from "../../router";
 
 enum DueDate {
   WEEK = "week",
@@ -20,28 +22,28 @@ enum DueDate {
 }
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const redirectProduct = () => navigate(Path.ProductManagement);
+  const redirectPDV = () => navigate(Path.PointOfSale);
+
   const [dueDate, setDueDate] = useState(DueDate.WEEK);
   return (
     <>
-      <Card mb="4">
-        <Flex justify="between">
-          <Text as="p" size="3">
-            Maria Silva
-          </Text>
-          <Text as="p" size="3">
-            Último acesso: 20/04/2025 - 10:35
-          </Text>
-          <Clock />
-        </Flex>
-      </Card>
+      <TopBarInformation title="Dashboard" />
 
       <Grid
-        columns="2"
         gap="4"
         mb="4"
-        style={{ height: "100%", alignItems: "stretch" }}
+        align="stretch"
+        height="100%"
+        columns={{ initial: "1", md: "2" }}
       >
-        <Grid rows="2" gap="4" style={{ height: "100%" }}>
+        <Grid
+          gap="4"
+          height="100%"
+          columns={{ initial: "1", sm: "2", md: "1" }}
+          rows={{ initial: "1", sm: "1", md: "2" }}
+        >
           {/* PDV */}
           <Card>
             <Flex direction="column" gap="5" height="100%">
@@ -52,7 +54,9 @@ const Dashboard: React.FC = () => {
                   o estoque
                 </Text>
               </Box>
-              <Button style={{ width: "max-content" }}>Acessar PDV</Button>
+              <Button style={{ width: "max-content" }} onClick={redirectPDV}>
+                Acessar PDV
+              </Button>
             </Flex>
           </Card>
 
@@ -66,7 +70,10 @@ const Dashboard: React.FC = () => {
                   atualizado
                 </Text>
               </Box>
-              <Button style={{ width: "max-content" }}>
+              <Button
+                style={{ width: "max-content" }}
+                onClick={redirectProduct}
+              >
                 Acessar gestão de produtos
               </Button>
             </Flex>
@@ -111,12 +118,10 @@ const Dashboard: React.FC = () => {
                   .fill({ name: "Leite Parmalat", dueDate: "30/04/2025" })
                   .map((item, index) => {
                     return (
-                      <ScrollLine
-                        key={index}
-                        index={index}
-                        left={item.name}
-                        right={item.dueDate}
-                      />
+                      <ScrollLine key={index} index={index}>
+                        <Box>{item.name}</Box>
+                        <Box>{item.dueDate}</Box>
+                      </ScrollLine>
                     );
                   })}
               </Flex>
