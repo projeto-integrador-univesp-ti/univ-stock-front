@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 
-const Clock = () => {
+interface ClockProps {
+  style?: CSSProperties;
+}
+
+const Clock: React.FC<ClockProps> = (props) => {
+  const { style } = props;
   const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -11,7 +16,7 @@ const Clock = () => {
     return () => clearInterval(interval);
   }, []);
 
-  return <time dateTime={time.toISOString()}>{time.toLocaleTimeString()}</time>;
+  return <time style={style} dateTime={time.toISOString()}>{time.toLocaleTimeString()}</time>;
 };
 
 export { Clock };
