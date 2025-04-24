@@ -7,7 +7,7 @@ import {
 } from "../../contexts/GlobalContext";
 import { TopBarInformation } from "../../components/TopBarInformation";
 
-const Settings = () => {
+const Settings: React.FC = () => {
   const {
     appearance,
     setAppearance,
@@ -42,8 +42,8 @@ const Settings = () => {
             defaultValue={appearance}
             onValueChange={setAppearance}
           >
-            {Appearances.map((item) => (
-              <RadioCards.Item value={item}>
+            {Appearances.map((item, index) => (
+              <RadioCards.Item value={item} key={index}>
                 {appearanceName[item]}
               </RadioCards.Item>
             ))}
@@ -62,8 +62,10 @@ const Settings = () => {
             defaultValue={scaling}
             onValueChange={setScalign}
           >
-            {Scalings.map((item) => (
-              <RadioCards.Item value={item}>{item}</RadioCards.Item>
+            {Scalings.map((item, index) => (
+              <RadioCards.Item value={item} key={index}>
+                {item}
+              </RadioCards.Item>
             ))}
           </RadioCards.Root>
         </Flex>
@@ -80,8 +82,8 @@ const Settings = () => {
             defaultValue={accentColors}
             onValueChange={setAccentColors}
           >
-            {AccentColors.map((item) => (
-              <RadioCards.Item value={item}>
+            {AccentColors.map((item, index) => (
+              <RadioCards.Item value={item} key={index}>
                 <div
                   style={{
                     background: `var(--${item}-indicator)`,
@@ -106,4 +108,4 @@ const Settings = () => {
   );
 };
 
-export { Settings };
+export default Settings;

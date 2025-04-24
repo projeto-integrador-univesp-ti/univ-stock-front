@@ -1,6 +1,7 @@
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useGlobalContext } from "./contexts/GlobalContext";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -8,9 +9,10 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PointOfSales from "./pages/PointOfSales";
 import ProductManagement from "./pages/ProductManagement";
-import { PrincipalTemplate } from "./template/PrincipalTemplate";
-import { Settings } from "./pages/Settings";
-import { useGlobalContext } from "./contexts/GlobalContext";
+import Settings from "./pages/Settings";
+
+// Templates
+import PrincipalTemplate from "./template/PrincipalTemplate";
 
 enum Path {
   Login = "/login",
@@ -21,18 +23,18 @@ enum Path {
   NotFound = "/not-found",
 }
 
-const Router = () => {
+const Router: React.FC = () => {
   const { scaling, appearance, panelBg, accentColors } = useGlobalContext();
 
   return (
     <BrowserRouter>
       <Theme
-        style={{ background: "var(--slate-3)" }}
-        accentColor={accentColors}
         radius="small"
+        grayColor="sand"
         scaling={scaling}
         appearance={appearance}
         panelBackground={panelBg}
+        accentColor={accentColors}
       >
         <Routes>
           <Route path="/" element={<Navigate to={Path.Login} replace />} />
@@ -54,3 +56,4 @@ const Router = () => {
 };
 
 export { Path, Router };
+

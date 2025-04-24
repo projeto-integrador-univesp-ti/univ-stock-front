@@ -10,7 +10,7 @@ import {
   SegmentedControl,
   Text,
 } from "@radix-ui/themes";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ScrollLine } from "../../components/ScrollLine";
 import { TopBarInformation } from "../../components/TopBarInformation";
@@ -21,23 +21,17 @@ enum DueDate {
   MONTH = "month",
 }
 
-const Dashboard: React.FC = () => {
+const Dashboard2: React.FC = () => {
   const navigate = useNavigate();
   const redirectProduct = () => navigate(Path.ProductManagement);
   const redirectPDV = () => navigate(Path.PointOfSale);
 
   const [dueDate, setDueDate] = useState(DueDate.WEEK);
   return (
-    <>
+    <Flex direction="column" gap="4" height="100%">
       <TopBarInformation title="Dashboard" />
 
-      <Grid
-        gap="4"
-        mb="4"
-        align="stretch"
-        height="100%"
-        columns={{ initial: "1", md: "2" }}
-      >
+      <Grid gap="4" columns={{ initial: "1", md: "2" }}>
         <Grid
           gap="4"
           height="100%"
@@ -118,10 +112,12 @@ const Dashboard: React.FC = () => {
                   .fill({ name: "Leite Parmalat", dueDate: "30/04/2025" })
                   .map((item, index) => {
                     return (
-                      <ScrollLine key={index} index={index}>
-                        <Box>{item.name}</Box>
-                        <Box>{item.dueDate}</Box>
-                      </ScrollLine>
+                      <React.Fragment key={index}>
+                        <ScrollLine key={index} index={index}>
+                          <Box>{item.name}</Box>
+                          <Box>{item.dueDate}</Box>
+                        </ScrollLine>
+                      </React.Fragment>
                     );
                   })}
               </Flex>
@@ -131,7 +127,7 @@ const Dashboard: React.FC = () => {
       </Grid>
 
       {/* Alertas gerais */}
-      <Card mb="5">
+      <Card>
         <Flex justify="between" align="center" mb="3">
           <Heading size="2">Alertas gerais</Heading>
         </Flex>
@@ -150,8 +146,8 @@ const Dashboard: React.FC = () => {
           </Flex>
         </ScrollArea>
       </Card>
-    </>
+    </Flex>
   );
 };
 
-export default Dashboard;
+export default Dashboard2;

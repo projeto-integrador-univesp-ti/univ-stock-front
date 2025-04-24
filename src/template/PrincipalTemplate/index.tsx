@@ -28,4 +28,4 @@ const PrincipalTemplate: React.FC = () => {
   );
 };
 
-export { PrincipalTemplate };
+export default PrincipalTemplate;

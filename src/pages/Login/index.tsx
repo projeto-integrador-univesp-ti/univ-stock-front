@@ -50,7 +50,7 @@ const Login: React.FC = () => {
               <Text as="label" htmlFor="password" color="gray" size="2">
                 Senha
               </Text>
-              <Link href="#" color="indigo" underline="none" size="2">
+              <Link href="#" underline="none" size="2">
                 Esqueci a senha
               </Link>
             </Flex>

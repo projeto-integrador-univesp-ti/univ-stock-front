@@ -18,7 +18,7 @@ const TopBarInformation: React.FC<TopBarInformationProps> = (props) => {
             as="p"
             size="3"
             weight="medium"
-            style={{ color: "var(--accent-10)" }}
+            style={{ color: "var(--accent-indicator)" }}
           >
             {title}
           </Text>

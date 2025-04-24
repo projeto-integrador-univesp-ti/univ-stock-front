@@ -6,17 +6,31 @@ export const Appearances = ["light", "dark"] as const;
 export const PanelBackgrounds = ["solid", "translucent"] as const;
 export const AccentColors = [
   "gray",
-  "amber",
-  "crimson",
+  "brown",
+  "bronze",
   "ruby",
+  "red",
+  "crimson",
+  "tomato",
+  "pink",
+  "plum",
+  "purple",
   "violet",
   "iris",
   "indigo",
   "blue",
+  "sky",
+  "cyan",
   "teal",
+  "jade",
   "green",
   "grass",
+  "mint",
   "lime",
+  "gold",
+  "amber",
+  "orange",
+  "yellow"
 ] as const;
 
 type Scalings = (typeof Scalings)[number];

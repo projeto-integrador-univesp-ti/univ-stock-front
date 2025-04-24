@@ -1,41 +1,43 @@
-import { Flex, Text } from "@radix-ui/themes";
-import React, { ReactNode } from "react";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const sizes = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
+import { Flex } from "@radix-ui/themes";
+import React, { CSSProperties, ReactNode } from "react";
 
 interface ProductLineExpiringProps {
-  index: number;
   children: ReactNode;
-  size?: (typeof sizes)[number];
+  index?: number;
   oddColor?: string;
   evenColor?: string;
+  style?: CSSProperties;
 }
 
 const ScrollLine: React.FC<ProductLineExpiringProps> = (props) => {
-  const { index, children, oddColor, evenColor, size = '3' } = props;
+  const {
+    index = 0,
+    children,
+    oddColor,
+    evenColor,
+    style = {}
+  } = props;
 
   const background =
     index % 2 === 0
-      ? oddColor ?? "var(--accent-5)"
-      : evenColor ?? "var(--accent-3)";
+      ? oddColor ?? "var(--gray-5)"
+      : evenColor ?? "var(--accent-indicator)";
 
   return (
     <Flex
       justify="between"
-      align='center'
+      align="center"
       py="1"
       px="2"
       flexGrow="1"
-      style={{ background, borderRadius: "var(--radius-4)" }}
+      style={{ background, borderRadius: "var(--radius-4)", ...style }}
     >
       {React.Children.map(children, (child, index) => (
-        <Text key={index} as="p" size={size}>
-          {child}
-        </Text>
+        <React.Fragment key={index}>{child}</React.Fragment>
       ))}
     </Flex>
   );
 };
 
 export { ScrollLine };
+
