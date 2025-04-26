@@ -72,6 +72,24 @@ const Dashboard2: React.FC = () => {
               </Button>
             </Flex>
           </Card>
+
+          {/* Gestão de fornecedores */}
+          <Card>
+            <Flex direction="column" gap="5" height="100%">
+              <Box>
+                <Heading size="2">Gestão de fornecedores</Heading>
+                <Text as="div" color="gray" size="2">
+                  Consulte, adicione, edite ou exclua fornecedores
+                </Text>
+              </Box>
+              <Button
+                style={{ width: "max-content" }}
+                onClick={redirectProduct}
+              >
+                Acessar gestão de produtos
+              </Button>
+            </Flex>
+          </Card>
         </Grid>
 
         {/* Alerta de vencimento */}
