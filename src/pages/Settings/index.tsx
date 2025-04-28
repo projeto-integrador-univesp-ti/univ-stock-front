@@ -33,7 +33,7 @@ const Settings: React.FC = () => {
       <TopBarInformation title="Configurações" />
       <Card>
         <Flex direction="column" gap="4">
-          <Heading as="h2" size="3">
+          <Heading as="h2" size="2">
             Aparência
           </Heading>
           <RadioCards.Root
@@ -53,7 +53,7 @@ const Settings: React.FC = () => {
 
       <Card>
         <Flex direction="column" gap="4">
-          <Heading as="h2" size="3">
+          <Heading as="h2" size="2">
             Escala (Zoom)
           </Heading>
           <RadioCards.Root
@@ -73,7 +73,7 @@ const Settings: React.FC = () => {
 
       <Card>
         <Flex direction="column" gap="4">
-          <Heading as="h2" size="3">
+          <Heading as="h2" size="2">
             Transparência (Zoom)
           </Heading>
           <RadioCards.Root
@@ -99,7 +99,7 @@ const Settings: React.FC = () => {
         </Flex>
       </Card>
 
-      <Flex justify="center" mt="9">
+      <Flex justify="center" mt="4">
         <Button variant="ghost" onClick={reset}>
           Resetar para padrão
         </Button>

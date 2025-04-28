@@ -1,5 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export const Scalings = ["90%", "95%", "100%", "105%", "110%"] as const;
 export const Appearances = ["light", "dark"] as const;
@@ -30,7 +36,7 @@ export const AccentColors = [
   "gold",
   "amber",
   "orange",
-  "yellow"
+  "yellow",
 ] as const;
 
 type Scalings = (typeof Scalings)[number];
@@ -70,6 +76,19 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     accentColors,
     setAccentColors,
   };
+
+  useEffect(() => {
+    for (let i = 1; i <= 12; i++) {
+      document.documentElement.style.setProperty(
+        `--accent-${i}`,
+        `var(--${accentColors.toLowerCase()}-${i.toString()})`
+      );
+      document.documentElement.style.setProperty(
+        `--accent-${i}`,
+        `var(--${accentColors.toLowerCase()}-a${i.toString()})`
+      );
+    }
+  }, [accentColors]);
 
   return (
     <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>

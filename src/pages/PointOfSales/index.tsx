@@ -142,7 +142,7 @@ const PointOfSales: React.FC = () => {
                   <Kbd>P</Kbd>
                 </Tooltip>
               </Flex>
-              <Button variant="solid">
+              <Button variant="surface">
                 Imprimir <DownloadIcon />
               </Button>
             </Flex>
@@ -155,7 +155,7 @@ const PointOfSales: React.FC = () => {
                 </Tooltip>
               </Flex>
               <Dialog.Trigger>
-                <Button variant="solid" color="red" onClick={openFinishSale}>
+                <Button variant="solid" style={{background: "var(--accent-a9)"}} onClick={openFinishSale}>
                   Finalizar compra <CheckIcon />
                 </Button>
               </Dialog.Trigger>

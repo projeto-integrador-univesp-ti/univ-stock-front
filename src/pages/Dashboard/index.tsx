@@ -1,7 +1,6 @@
 import { ValueNoneIcon } from "@radix-ui/react-icons";
 import {
   Box,
-  Button,
   Card,
   Flex,
   Grid,
@@ -11,10 +10,8 @@ import {
   Text,
 } from "@radix-ui/themes";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ScrollLine } from "../../components/ScrollLine";
 import { TopBarInformation } from "../../components/TopBarInformation";
-import { Path } from "../../router";
 
 enum DueDate {
   WEEK = "week",
@@ -22,80 +19,15 @@ enum DueDate {
 }
 
 const Dashboard2: React.FC = () => {
-  const navigate = useNavigate();
-  const redirectProduct = () => navigate(Path.ProductManagement);
-  const redirectPDV = () => navigate(Path.PointOfSale);
-
   const [dueDate, setDueDate] = useState(DueDate.WEEK);
   return (
     <Flex direction="column" gap="4" height="100%">
       <TopBarInformation title="Dashboard" />
 
-      <Grid gap="4" columns={{ initial: "1", md: "2" }}>
-        <Grid
-          gap="4"
-          height="100%"
-          columns={{ initial: "1", sm: "2", md: "1" }}
-          rows={{ initial: "1", sm: "1", md: "2" }}
-        >
-          {/* PDV */}
-          <Card>
-            <Flex direction="column" gap="5" height="100%">
-              <Box>
-                <Heading size="2">PDV</Heading>
-                <Text as="div" color="gray" size="2">
-                  Registre sua venda de produtos para atualizar automaticamente
-                  o estoque
-                </Text>
-              </Box>
-              <Button style={{ width: "max-content" }} onClick={redirectPDV}>
-                Acessar PDV
-              </Button>
-            </Flex>
-          </Card>
-
-          {/* Gestão de produtos */}
-          <Card>
-            <Flex direction="column" gap="5" height="100%">
-              <Box>
-                <Heading size="2">Gestão de produtos</Heading>
-                <Text as="div" color="gray" size="2">
-                  Adicione, edite ou exclua produtos para manter seu estoque
-                  atualizado
-                </Text>
-              </Box>
-              <Button
-                style={{ width: "max-content" }}
-                onClick={redirectProduct}
-              >
-                Acessar gestão de produtos
-              </Button>
-            </Flex>
-          </Card>
-
-          {/* Gestão de fornecedores */}
-          <Card>
-            <Flex direction="column" gap="5" height="100%">
-              <Box>
-                <Heading size="2">Gestão de fornecedores</Heading>
-                <Text as="div" color="gray" size="2">
-                  Consulte, adicione, edite ou exclua fornecedores
-                </Text>
-              </Box>
-              <Button
-                style={{ width: "max-content" }}
-                onClick={redirectProduct}
-              >
-                Acessar gestão de produtos
-              </Button>
-            </Flex>
-          </Card>
-        </Grid>
-
-        {/* Alerta de vencimento */}
+      <Grid gap="4" columns={{ initial: "1" }}>
         <Card>
           <Flex justify="between" align="center" mb="3">
-            <Heading size="2">Produtos próximos a vencer</Heading>
+            <Heading as="h2" size="2">Produtos próximos a vencer</Heading>
             <SegmentedControl.Root
               defaultValue={DueDate.WEEK}
               onValueChange={(value: DueDate) => setDueDate(value)}
@@ -108,7 +40,7 @@ const Dashboard2: React.FC = () => {
               </SegmentedControl.Item>
             </SegmentedControl.Root>
           </Flex>
-          <ScrollArea type="auto" scrollbars="vertical" style={{ height: 300 }}>
+          <ScrollArea type="auto" scrollbars="vertical" style={{ height: 200 }}>
             {dueDate === DueDate.WEEK && (
               <Flex
                 gap="2"
@@ -142,28 +74,27 @@ const Dashboard2: React.FC = () => {
             )}
           </ScrollArea>
         </Card>
-      </Grid>
 
-      {/* Alertas gerais */}
-      <Card>
-        <Flex justify="between" align="center" mb="3">
-          <Heading size="2">Alertas gerais</Heading>
-        </Flex>
-        <ScrollArea type="auto" scrollbars="vertical" style={{ height: 100 }}>
-          <Flex
-            gap="2"
-            direction="column"
-            height="100%"
-            align="center"
-            justify="center"
-          >
-            <ValueNoneIcon width="25" height="25" color="gray" />
-            <Text as="p" size="3" color="gray">
-              Sem novos alertas!
-            </Text>
+        <Card>
+          <Flex justify="between" align="center" mb="3">
+            <Heading as="h2" size="2">Alertas gerais</Heading>
           </Flex>
-        </ScrollArea>
-      </Card>
+          <ScrollArea type="auto" scrollbars="vertical" style={{ height: 200 }}>
+            <Flex
+              gap="2"
+              direction="column"
+              height="100%"
+              align="center"
+              justify="center"
+            >
+              <ValueNoneIcon width="25" height="25" color="gray" />
+              <Text as="p" size="3" color="gray">
+                Sem novos alertas!
+              </Text>
+            </Flex>
+          </ScrollArea>
+        </Card>
+      </Grid>
     </Flex>
   );
 };

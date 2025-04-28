@@ -4,13 +4,13 @@ import { TopBarSite } from "../../components/TopBarSite";
 
 const PrincipalTemplate: React.FC = () => {
   return (
-    <Flex direction="column" style={{minHeight: '100vh', height: 'calc(100vh - 64px)'}}>
+    <Flex direction="column" style={{minHeight: '100vh', height: 'calc(100vh - 60px)'}}>
       <TopBarSite />
       <Container
         p="4"
         mb='2'
         size="4"
-        style={{ background: "var(--sand-2)", minHeight:'calc(100vh - 64px)' }}
+        style={{ background: "var(--sand-2)", minHeight:'calc(100vh - 60px)' }}
       >
         <Outlet />
       </Container>

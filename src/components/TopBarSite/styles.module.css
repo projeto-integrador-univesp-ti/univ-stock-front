@@ -1,0 +1,126 @@
+.Root {
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 6px;
+  flex: 1;
+  /* box-shadow: var(--shadow-2); */
+
+  .Invisible {
+    visibility: hidden;
+  }
+}
+
+.Trigger {
+  all: unset;
+  padding: 8px 12px;
+  outline: none;
+  user-select: none;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 4px;
+  color: var(--accent-11);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.Trigger[data-highlighted],
+.Trigger[data-state="open"],
+.Trigger:hover:not([data-state="open"]) {
+  background-color: var(--accent-a3);
+  cursor: pointer;
+}
+
+.Trigger:not(:hover):not([data-state="open"]) {
+	background: transparent;
+}
+
+.Content,
+.SubContent {
+  min-width: 220px;
+  background-color: white;
+  border-radius: 6px;
+  padding: 5px;
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.Item,
+.SubTrigger,
+.CheckboxItem,
+.RadioItem {
+  all: unset;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--accent-11);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  height: 25px;
+  padding: 0 10px;
+  position: relative;
+  user-select: none;
+}
+
+.Item:global(.inset),
+.SubTrigger:global(.inset),
+.CheckboxItem:global(.inset),
+.RadioItem:global(.inset) {
+  padding-left: 20px;
+}
+
+.Item[data-state="open"],
+.SubTrigger[data-state="open"] {
+  background-color: var(--accent-4);
+  color: var(--accent-11);
+}
+
+.Item[data-highlighted],
+.SubTrigger[data-highlighted],
+.CheckboxItem[data-highlighted],
+.RadioItem[data-highlighted] {
+  background-image: linear-gradient(
+    135deg,
+    var(--accent-4) 0%,
+    var(--accent-4) 100%
+  );
+  color: var(--accent-12);
+  cursor: pointer;
+}
+
+.Item[data-disabled],
+.SubTrigger[data-disabled],
+.CheckboxItem[data-disabled],
+.RadioItem[data-disabled] {
+  color: var(--mauve-8);
+  pointer-events: none;
+}
+
+.ItemIndicator {
+  position: absolute;
+  left: 0;
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Separator {
+  height: 1px;
+  background-color: var(--accent-6);
+  margin: 5px;
+}
+
+.RightSlot {
+  margin-left: auto;
+  padding-left: 20px;
+  color: var(--mauve-9);
+}
+
+[data-disabled] > .RightSlot {
+  color: var(--mauve-8);
+}

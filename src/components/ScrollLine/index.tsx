@@ -21,7 +21,7 @@ const ScrollLine: React.FC<ProductLineExpiringProps> = (props) => {
   const background =
     index % 2 === 0
       ? oddColor ?? "var(--gray-5)"
-      : evenColor ?? "var(--accent-indicator)";
+      : evenColor ?? "var(--accent-5)";
 
   return (
     <Flex
