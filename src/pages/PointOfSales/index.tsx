@@ -8,12 +8,11 @@ import {
   Grid,
   Kbd,
   ScrollArea,
-  Separator,
   Text,
   TextField,
   Tooltip,
 } from "@radix-ui/themes";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollLine } from "../../components/ScrollLine";
 import { TopBarInformation } from "../../components/TopBarInformation";
 import {
@@ -21,10 +20,14 @@ import {
   formatToBRLCurrency,
   normalizeDecimal,
 } from "../../utils/formatCurrency";
+import { exitFullScreen, fullScreen } from "../../utils/fullScreen";
 
 const PointOfSales: React.FC = () => {
   const produto = { name: "Leite Parmalat", qtd: "1,000", preco: "4,99" };
   const produtos: (typeof produto)[] = Array(10).fill(produto);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [open, setOpen] = useState(false);
   const [subtotal] = useState("10,00");
@@ -49,7 +52,27 @@ const PointOfSales: React.FC = () => {
     setOpen(false);
   };
 
+  const handleBlur = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 3000);
+  };
+
   useEffect(() => {
+    inputRef.current?.focus();
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    fullScreen();
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "f") {
         e.preventDefault();
@@ -62,124 +85,172 @@ const PointOfSales: React.FC = () => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      exitFullScreen();
+    };
   }, []);
 
   return (
-    <Flex direction="column" gap="4" height="100%">
+    <Flex direction="column" gap="4">
       <Dialog.Root open={open}>
-        <TopBarInformation title="Ponto de Venda" />
+        <Grid
+          rows="48px 1fr 260px"
+          gap="4"
+          style={{ height: "calc(100vh - 100px)", background: " " }}
+        >
+          <TopBarInformation title="Ponto de Venda" />
 
-        <Card style={{ height: "60%" }}>
-          <Flex direction="row" ml="36px" align="center">
-            <ScrollLine
-              oddColor=""
-              evenColor=""
-              style={{ background: "var(--slate-5)" }}
-            >
-              <Text weight="medium">PRODUTO</Text>
-              <Flex gap="8">
-                <Text
-                  weight="medium"
-                  style={{ textAlign: "right", width: "150px" }}
-                >
-                  QUANTIDADE
-                </Text>
-                <Text
-                  weight="medium"
-                  style={{ textAlign: "right", width: "120px" }}
-                >
-                  PREÇO UNID.
-                </Text>
-              </Flex>
-            </ScrollLine>
-          </Flex>
-
-          <ScrollArea
-            type="always"
-            scrollbars="vertical"
-            style={{ height: "calc(100% - 36px)" }}
-          >
-            <Flex direction="column" py="2" pr="3" gap="2">
-              {produtos.map((item, index) => {
-                return (
-                  <Flex direction="row" align="center" gap="2" key={index}>
-                    <Box width="30px">
-                      <Text as="p" size="3">
-                        {(index + 1).toString().padStart(3, "000")}
-                      </Text>
-                    </Box>
-                    <ScrollLine oddColor="" evenColor="" index={index}>
-                      <Text weight="regular">{item.name}</Text>
-                      <Flex gap="8">
-                        <Text
-                          weight="regular"
-                          style={{ textAlign: "right", width: "150px" }}
-                        >
-                          {item.qtd}
-                        </Text>
-                        <Text
-                          weight="regular"
-                          style={{ textAlign: "right", width: "120px" }}
-                        >
-                          {item.preco}
-                        </Text>
-                      </Flex>
-                    </ScrollLine>
-                  </Flex>
-                );
-              })}
-            </Flex>
-          </ScrollArea>
-        </Card>
-
-        <Grid columns={{ initial: "1", sm: "2" }} height="40%" gap="4">
           <Card>
-            <Flex direction="column" gap="4">
-              <Flex justify="between" align="center">
-                <Text size="3">Impressão da nota resumo</Text>
-                <Tooltip content='Aperte a tecla "P" para imprimir resumo de compra'>
-                  <Kbd>P</Kbd>
-                </Tooltip>
-              </Flex>
-              <Button variant="surface">
-                Imprimir <DownloadIcon />
-              </Button>
+            <Flex direction="row" ml="36px" align="center">
+              <ScrollLine
+                oddColor=""
+                evenColor=""
+                style={{ background: "var(--slate-5)" }}
+              >
+                <Text weight="medium">PRODUTO</Text>
+                <Flex gap="8">
+                  <Text
+                    weight="medium"
+                    style={{ textAlign: "right", width: "150px" }}
+                  >
+                    QUANTIDADE
+                  </Text>
+                  <Text
+                    weight="medium"
+                    style={{ textAlign: "right", width: "120px" }}
+                  >
+                    PREÇO UNID.
+                  </Text>
+                </Flex>
+              </ScrollLine>
             </Flex>
-            <Separator size="4" my="9" />
-            <Flex direction="column" gap="4">
-              <Flex justify="between" align="center">
-                <Text size="3">Finalização da compra</Text>
-                <Tooltip content='Aperte a tecla "F" para finalizar a compra'>
-                  <Kbd>F</Kbd>
-                </Tooltip>
+
+            <ScrollArea
+              type="always"
+              scrollbars="vertical"
+              style={{ height: "calc(100% - 36px)" }}
+            >
+              <Flex direction="column" py="2" pr="3" gap="2">
+                {produtos.map((item, index) => {
+                  return (
+                    <Flex direction="row" align="center" gap="2" key={index}>
+                      <Box width="30px">
+                        <Text as="p" size="3">
+                          {(index + 1).toString().padStart(3, "000")}
+                        </Text>
+                      </Box>
+                      <ScrollLine oddColor="" evenColor="" index={index}>
+                        <Text weight="regular">{item.name}</Text>
+                        <Flex gap="8">
+                          <Text
+                            weight="regular"
+                            style={{ textAlign: "right", width: "150px" }}
+                          >
+                            {item.qtd}
+                          </Text>
+                          <Text
+                            weight="regular"
+                            style={{ textAlign: "right", width: "120px" }}
+                          >
+                            {item.preco}
+                          </Text>
+                        </Flex>
+                      </ScrollLine>
+                    </Flex>
+                  );
+                })}
               </Flex>
-              <Dialog.Trigger>
-                <Button variant="solid" style={{background: "var(--accent-a9)"}} onClick={openFinishSale}>
-                  Finalizar compra <CheckIcon />
-                </Button>
-              </Dialog.Trigger>
-            </Flex>
+            </ScrollArea>
           </Card>
 
-          <Grid columns="1" rows="2" gap="4">
+          <Grid
+            columns={{ initial: "1", sm: "2fr 1fr" }}
+            gap="4"
+            justify="between"
+          >
             <Card>
-              <Flex direction="column" gap="4">
-                <Flex justify="between" align="center">
-                  <Text size="5">DESCONTO</Text>
-                  <Tooltip content='Aperte a tecla "D" para aplicar um desconto'>
-                    <Kbd>D</Kbd>
-                  </Tooltip>
+              <Flex direction="column" mb='4'>
+                <Text as="div" size="3" weight="bold">
+                  Item
+                </Text>
+                <TextField.Root
+                  ref={inputRef}
+                  type="text"
+                  maxLength={12}
+                  style={{
+                    height: "80px",
+                    fontSize: "50px",
+                    textAlign: "end",
+                  }}
+                  onBlur={handleBlur}
+                  onChange={(e) =>
+                    setValorPago(formatToBRLCurrency(e.target.value))
+                  }
+                ></TextField.Root>
+              </Flex>
+              <Flex direction="row" gap="4">
+                <Card style={{ flex: 1 }}>
+                  <Flex direction="column" gap="4">
+                    <Flex justify="between" align="center" flexGrow="1">
+                      <Text size="3">Impressão da nota resumo</Text>
+                      <Tooltip content='Aperte a tecla "P" para imprimir resumo de compra'>
+                        <Kbd>P</Kbd>
+                      </Tooltip>
+                    </Flex>
+                    <Button variant="surface">
+                      Imprimir <DownloadIcon />
+                    </Button>
+                  </Flex>
+                </Card>
+
+                <Card style={{ flex: 1 }}>
+                  <Flex direction="column" gap="4">
+                    <Flex justify="between" align="center" flexGrow="1">
+                      <Text size="3">Finalização de compra</Text>
+                      <Tooltip content='Aperte a tecla "F" para finalizar a compra'>
+                        <Kbd>F</Kbd>
+                      </Tooltip>
+                    </Flex>
+                    <Dialog.Trigger>
+                      <Button
+                        variant="solid"
+                        style={{ background: "var(--accent-a9)" }}
+                        onClick={openFinishSale}
+                      >
+                        Finalizar compra <CheckIcon />
+                      </Button>
+                    </Dialog.Trigger>
+                  </Flex>
+                </Card>
+              </Flex>
+            </Card>
+
+            <Grid columns="1" rows="2" gap="4">
+              <Card>
+                <Flex direction="column" align="center" gap="4">
+                  <Flex justify="between" align="center" gap="4">
+                    <Text as="div" size="3" weight="bold">
+                      DESCONTO
+                    </Text>
+                    <Tooltip content='Aperte a tecla "D" para aplicar um desconto'>
+                      <Kbd>D</Kbd>
+                    </Tooltip>
+                  </Flex>
+                  <Text size="9">R$ 0,00</Text>
                 </Flex>
-                <Text size="9">R$ 0,00</Text>
-              </Flex>
-            </Card>
-            <Card>
-              <Flex direction="column" gap="4">
-                <Text size="5">SUBTOTAL</Text>
-                <Text size="9">R$ {subtotal}</Text>
-              </Flex>
-            </Card>
+              </Card>
+              <Card>
+                <Flex direction="column" align="center" gap="4">
+                  <Text as="div" size="3" weight="bold">
+                    SUBTOTAL
+                  </Text>
+                  <Text size="9" style={{ color: "var(--accent-a10)" }}>
+                    R$ {subtotal}
+                  </Text>
+                </Flex>
+              </Card>
+            </Grid>
           </Grid>
         </Grid>
 
