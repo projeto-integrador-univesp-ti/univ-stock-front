@@ -14,6 +14,7 @@ const TopBarSite: React.FC = () => {
   const redirectDashboard = () => navigate(Path.Dashboard);
   const redirectSettings = () => navigate(Path.Settings);
   const redirectPointOfSale = () => navigate(Path.PointOfSale);
+  const redirectProductManagement = () => navigate(Path.ProductManagement);
 
   const { appearance } = useGlobalContext();
 
@@ -22,6 +23,10 @@ const TopBarSite: React.FC = () => {
       if (e.key.toLowerCase() === "f2") {
         e.preventDefault();
         redirectPointOfSale();
+      }
+      if (e.key.toLowerCase() === "f3") {
+        e.preventDefault();
+        redirectProductManagement();
       }
     };
 
@@ -126,7 +131,7 @@ const TopBarSite: React.FC = () => {
               sideOffset={5}
               alignOffset={0}
             >
-              <Menubar.Item className={`${styles.Item} inset`} disabled>
+              <Menubar.Item className={`${styles.Item} inset`} onClick={redirectProductManagement}>
                 Gestão de produtos <div className={styles.RightSlot}>F3</div>
               </Menubar.Item>
               <Menubar.Item className={`${styles.Item} inset`} disabled>
