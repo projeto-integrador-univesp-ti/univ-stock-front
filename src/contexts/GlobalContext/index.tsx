@@ -61,7 +61,7 @@ type GlobalState = {
 const GlobalContext = createContext<GlobalState | undefined>(undefined);
 
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
-  const [scaling, setScalign] = useState<Scalings>("100%");
+  const [scaling, setScalign] = useState<Scalings>("105%");
   const [appearance, setAppearance] = useState<Appearences>("dark");
   const [panelBg, setPanelBg] = useState<PanelBackgrounds>("translucent");
   const [accentColors, setAccentColors] = useState<AccentColors>("indigo");

@@ -25,7 +25,7 @@ const Settings: React.FC = () => {
   const reset = () => {
     setAppearance("dark");
     setAccentColors("iris");
-    setScalign("100%");
+    setScalign("105%");
   };
 
   return (
