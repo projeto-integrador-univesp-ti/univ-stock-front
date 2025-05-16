@@ -17,7 +17,7 @@ import PrincipalTemplate from "./template/PrincipalTemplate";
 enum Path {
   Login = "/login",
   Dashboard = "/dashboard",
-  ProductManagement = "/product-management",
+  ProductManagement = "/product-management#search",
   PointOfSale = "/point-of-sale",
   Settings = "/settings",
   NotFound = "/not-found",
