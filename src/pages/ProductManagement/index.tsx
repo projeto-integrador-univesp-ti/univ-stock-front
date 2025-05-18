@@ -6,6 +6,7 @@ import {
   Select,
   Separator,
   Switch,
+  Table,
   TabNav,
   Text,
   TextField,
@@ -16,7 +17,7 @@ import { SyntheticEvent, useEffect, useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "./styles.css";
 
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { MagnifyingGlassIcon, ValueNoneIcon } from "@radix-ui/react-icons";
 import { Measure, MeasureService } from "../../service/MeasureService";
 import { Product, ProductService } from "../../service/ProductService";
 
@@ -34,10 +35,15 @@ const ProductManagement = () => {
   const [measure, setMeasure] = useState("5");
   const [sucessAdded, setSucessAdded] = useState(false);
   const [errorAdded, setErrorAdded] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsFiltered, setProductsFiltered] = useState<Product[] | null>(
+    null
+  );
   const [productAdded, setProductAdded] = useState({} as Product);
 
   const getProducts = async () => {
-    ProductService.getAll();
+    const allProducts = await ProductService.getAll();
+    setProducts(allProducts);
   };
 
   const initHash = () => {
@@ -85,6 +91,7 @@ const ProductManagement = () => {
 
   useEffect(() => {
     initMeasures();
+    getProducts();
   }, []);
 
   useEffect(() => {
@@ -110,14 +117,70 @@ const ProductManagement = () => {
       </TabNav.Root>
 
       {hash === Action.SEARCH && (
-        <TextField.Root
-          style={{ marginTop: "1rem" }}
-          placeholder="Search the docs…"
-        >
-          <TextField.Slot>
-            <MagnifyingGlassIcon height="16" width="16" />
-          </TextField.Slot>
-        </TextField.Root>
+        <>
+          <TextField.Root
+            style={{ margin: "1rem 0" }}
+            placeholder="Buscar produto por nome..."
+            onChange={(event) => {
+              const value = event.target.value;
+              const filteredProducts = products.filter((product) =>
+                product.nome.toLowerCase().includes(value.toLowerCase())
+              );
+              if (value) {
+                setProductsFiltered(filteredProducts);
+              } else {
+                setProductsFiltered(null);
+              }
+            }}
+          >
+            <TextField.Slot>
+              <MagnifyingGlassIcon height="16" width="16" />
+            </TextField.Slot>
+          </TextField.Root>
+
+          <Flex direction="column" gap="4">
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>
+                    Nome do produto
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Marca</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Quantidade</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+
+              <Table.Body>
+                {(productsFiltered || products).map((product, index) => (
+                  <Table.Row key={index}>
+                    <Table.RowHeaderCell>{product.nome}</Table.RowHeaderCell>
+                    <Table.Cell>{product.marca}</Table.Cell>
+                    <Table.Cell>{product.quantidade}</Table.Cell>
+                  </Table.Row>
+                ))}
+
+                {productsFiltered?.length === 0 && (
+                  <Table.Row>
+                    <Table.Cell colSpan={3}>
+                      <Flex
+                        gap="2"
+                        direction="column"
+                        height="100%"
+                        align="center"
+                        justify="center"
+                      >
+                        <ValueNoneIcon width="25" height="25" color="gray" />
+                        <Text as="p" size="3" color="gray">
+                          Produto filtrado não encontrado!
+                        </Text>
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table.Root>
+          </Flex>
+        </>
       )}
 
       {hash === Action.ADD_EDIT && (
@@ -301,7 +364,9 @@ const ProductManagement = () => {
             </Form.Field>
           </Grid>
 
-          <Form.Submit onClick={getProducts}>Adicionar</Form.Submit>
+          <Form.Submit>
+            <Text size='3'>Adicionar</Text>
+          </Form.Submit>
         </Form.Root>
       )}
 

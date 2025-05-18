@@ -38,6 +38,7 @@ body {
 .react-datepicker-wrapper input:focus-visible,
 .react-datepicker__input-container,
 .react-datepicker-wrapper {
+  font-size: var(--font-size-3);
   width: 100%;
   background-color: transparent;
   border: none;

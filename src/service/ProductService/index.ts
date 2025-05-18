@@ -12,8 +12,8 @@ export interface Product {
 
 const ProductService = {
   async getAll(): Promise<Product[]> {
-    const response = await api.get<Product[]>("/product");
-    return response.data;
+    const response = await api.get<{ data: Product[] }>("/product");
+    return response.data.data;
   },
 
   async add(product: Omit<Product, "id">): Promise<Product> {
