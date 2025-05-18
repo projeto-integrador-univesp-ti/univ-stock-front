@@ -1,16 +1,24 @@
 import {
+  Button,
+  Dialog,
   Flex,
   Grid,
   Select,
   Separator,
   Switch,
   TabNav,
+  Text,
+  TextField,
 } from "@radix-ui/themes";
-import { Form } from "radix-ui";
-import { useEffect, useState } from "react";
-import DatePicker, { registerLocale } from "react-datepicker";
 import { ptBR } from "date-fns/locale/pt-BR";
+import { Form } from "radix-ui";
+import { SyntheticEvent, useEffect, useState } from "react";
+import DatePicker, { registerLocale } from "react-datepicker";
 import "./styles.css";
+
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { Measure, MeasureService } from "../../service/MeasureService";
+import { Product, ProductService } from "../../service/ProductService";
 
 enum Action {
   SEARCH = "#search",
@@ -20,11 +28,67 @@ enum Action {
 registerLocale("pt-BR", ptBR);
 
 const ProductManagement = () => {
-  const [hash, setHash] = useState(Action.SEARCH as string);
+  const [hash, setHash] = useState(window.location.hash);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
-  const [medida, setMedida] = useState("unidade");
+  const [measures, setMeasures] = useState([] as Measure[]);
+  const [measure, setMeasure] = useState("5");
+  const [sucessAdded, setSucessAdded] = useState(false);
+  const [errorAdded, setErrorAdded] = useState(false);
+  const [productAdded, setProductAdded] = useState({} as Product);
+
+  const getProducts = async () => {
+    ProductService.getAll();
+  };
+
+  const initHash = () => {
+    const has = ([Action.SEARCH, Action.ADD_EDIT] as string[]).includes(
+      window.location.hash
+    );
+    if (!has) {
+      setHash(Action.SEARCH);
+      window.location.hash = Action.SEARCH;
+    }
+  };
+
+  const initMeasures = async () => {
+    const measures = await MeasureService.getAll();
+    setMeasures(measures);
+  };
+
+  const resetForm = () => {
+    if (!errorAdded) {
+      document.forms?.namedItem("add-product")?.reset();
+    }
+    setSucessAdded(false);
+    setErrorAdded(false);
+    setProductAdded({} as Product);
+  };
+
+  const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    try {
+      const product = await ProductService.add({
+        ...data,
+        idMedida: Number(data.idMedida as string),
+        quantidade: Number((data.quantidade as string).replace(",", ".")),
+        precoUnidade: Number((data.precoUnidade as string).replace(",", ".")),
+        perecivel: !!data.perecivel,
+      } as unknown as Product);
+
+      setSucessAdded(true);
+      setProductAdded(product);
+    } catch {
+      setErrorAdded(true);
+    }
+  };
 
   useEffect(() => {
+    initMeasures();
+  }, []);
+
+  useEffect(() => {
+    initHash();
     const handleHashChange = () => {
       setHash(window.location.hash);
     };
@@ -45,30 +109,28 @@ const ProductManagement = () => {
         </TabNav.Link>
       </TabNav.Root>
 
+      {hash === Action.SEARCH && (
+        <TextField.Root
+          style={{ marginTop: "1rem" }}
+          placeholder="Search the docs…"
+        >
+          <TextField.Slot>
+            <MagnifyingGlassIcon height="16" width="16" />
+          </TextField.Slot>
+        </TextField.Root>
+      )}
+
       {hash === Action.ADD_EDIT && (
         <Form.Root
+          name="add-product"
           style={{
             display: "flex",
             flexDirection: "column",
             marginTop: "1rem",
             gap: "1rem",
           }}
-          onSubmit={(event) => {
-            event.preventDefault();
-            const data = Object.fromEntries(new FormData(event.currentTarget));
-            console.log("Form data:", data);
-          }}
-          onClearServerErrors={
-            () => {}
-            // setServerErrors({ email: false, password: false })
-          }
+          onSubmit={submit}
         >
-          {/* <TextField.Root placeholder="Search the docs…">
-          <TextField.Slot>
-            <MagnifyingGlassIcon height="16" width="16" />
-          </TextField.Slot>
-        </TextField.Root> */}
-
           <Grid columns={{ initial: "1", sm: "2" }} gap="4">
             <Form.Field name="nome">
               <Form.Label>Nome do produto</Form.Label>
@@ -114,12 +176,14 @@ const ProductManagement = () => {
                   maxLength={10}
                   max={9999999999}
                   min={0}
-                  type="number"
-                  pattern="[0-9]*"
+                  pattern="^\d+(,\d{1,2})?$"
                   className="rt-reset rt-TextFieldInput"
                   required
                 />
               </div>
+              <Form.Message className="error-message" match="patternMismatch">
+                Valor incorreto, apenas números e 1 vírgula.
+              </Form.Message>
               <Form.Message className="error-message" match="valueMissing">
                 Quantidade do produto é obrigatório.
               </Form.Message>
@@ -128,39 +192,48 @@ const ProductManagement = () => {
               </Form.Message>
             </Form.Field>
 
-            <Form.Field name="unidade_medida">
+            <Form.Field name="idMedida">
               <Form.Label>Unidade de medida</Form.Label>
               <Select.Root
-                name="unidade_medida"
-                defaultValue="unidade"
-                onValueChange={setMedida}
+                name="idMedida"
+                defaultValue={measure}
+                onValueChange={setMeasure}
               >
                 <Select.Trigger />
                 <Select.Content>
                   <Select.Group>
                     <Select.Label>Unidade de medida</Select.Label>
-                    <Select.Item value="unidade">Unidade</Select.Item>
-                    <Select.Item value="kilo">Kilo</Select.Item>
-                    <Select.Item value="litro">Litro</Select.Item>
+                    {measures.map((item) => (
+                      <Select.Item key={item.id} value={item.id.toString()}>
+                        {item?.nome} ({item?.sigla})
+                      </Select.Item>
+                    ))}
                   </Select.Group>
                 </Select.Content>
               </Select.Root>
             </Form.Field>
 
-            <Form.Field name="preco_unidade">
-              <Form.Label>Preço por {medida}</Form.Label>
+            <Form.Field name="precoUnidade">
+              <Form.Label>
+                Preço por{" "}
+                {measures
+                  .find((item) => item.id.toString() === measure)
+                  ?.nome?.toLowerCase()}
+              </Form.Label>
               <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
                 <Form.Control
                   minLength={1}
                   maxLength={10}
                   max={9999999999}
                   min={0}
-                  type="number"
-                  pattern="[0-9]*"
+                  pattern="^\d+(,\d{1,2})?$"
                   className="rt-reset rt-TextFieldInput"
                   required
                 />
               </div>
+              <Form.Message className="error-message" match="patternMismatch">
+                Valor incorreto, apenas números e 1 vírgula.
+              </Form.Message>
               <Form.Message className="error-message" match="valueMissing">
                 Quantidade do produto é obrigatório.
               </Form.Message>
@@ -178,7 +251,12 @@ const ProductManagement = () => {
               style={{ display: "flex", flexDirection: "column" }}
             >
               <Flex gap="3">
-                <Switch name="perecivel" size="2" id="aa" defaultChecked />
+                <Switch
+                  name="perecivel"
+                  size="2"
+                  value={"true"}
+                  defaultChecked
+                />
                 <Form.Label htmlFor="aa">Produto perecível</Form.Label>
               </Flex>
             </Form.Field>
@@ -189,7 +267,7 @@ const ProductManagement = () => {
               <Form.Label>Número do lote</Form.Label>
               <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
                 <Form.Control
-                  minLength={10}
+                  minLength={5}
                   maxLength={45}
                   className="rt-reset rt-TextFieldInput"
                   required
@@ -198,15 +276,18 @@ const ProductManagement = () => {
               <Form.Message className="error-message" match="valueMissing">
                 Número do lote é obrigatório.
               </Form.Message>
+              <Form.Message className="error-message" match="tooShort">
+                Número do lote deve ter no mínimo 5 caracteres.
+              </Form.Message>
               <Form.Message className="error-message" match="tooLong">
                 Número do lote não pode ultrapassar 45 caracteres.
               </Form.Message>
             </Form.Field>
 
-            <Form.Field name="data_validade">
+            <Form.Field name="dataValidade">
               <Form.Label>Data de validade</Form.Label>
               <DatePicker
-                name="data_validade"
+                name="dataValidade"
                 popperPlacement="bottom-start"
                 className="datepicker"
                 dateFormat="dd/MM/yyyy"
@@ -220,9 +301,41 @@ const ProductManagement = () => {
             </Form.Field>
           </Grid>
 
-          <Form.Submit>Adicionar</Form.Submit>
+          <Form.Submit onClick={getProducts}>Adicionar</Form.Submit>
         </Form.Root>
       )}
+
+      <Dialog.Root open={sucessAdded || errorAdded}>
+        <Dialog.Content size="1" maxWidth="500px">
+          <Flex gap="4" direction="column" align="center">
+            {sucessAdded && (
+              <Text as="p" trim="both" size="3" align="center">
+                O produto
+                <Text as="span" size="3" weight="bold" color="green">
+                  &nbsp;({productAdded.nome})&nbsp;
+                </Text>
+                foi adicionado com sucesso!
+              </Text>
+            )}
+            {errorAdded && (
+              <Text as="p" trim="both" size="3" align="center">
+                O produto não pode ser adicionado, tente novamente!
+              </Text>
+            )}
+            <Flex gap="3" justify="end">
+              <Dialog.Close>
+                <Button
+                  variant="soft"
+                  onClick={resetForm}
+                  style={{ width: "150px" }}
+                >
+                  Fechar
+                </Button>
+              </Dialog.Close>
+            </Flex>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </>
   );
 };
