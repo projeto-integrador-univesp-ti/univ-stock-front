@@ -1,4 +1,4 @@
-import { CheckIcon, DownloadIcon } from "@radix-ui/react-icons";
+import { CheckIcon, MinusCircledIcon } from "@radix-ui/react-icons";
 import {
   Box,
   Button,
@@ -15,6 +15,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollLine } from "../../components/ScrollLine";
 import { TopBarInformation } from "../../components/TopBarInformation";
+import { ProductService } from "../../service/ProductService";
 import {
   formatBRLCurrencytoNumber,
   formatToBRLCurrency,
@@ -23,25 +24,41 @@ import {
 import { exitFullScreen, fullScreen } from "../../utils/fullScreen";
 
 const PointOfSales: React.FC = () => {
-  const produto = { name: "Leite Parmalat", qtd: "1,000", preco: "4,99" };
-  const produtos: (typeof produto)[] = Array(10).fill(produto);
+  const [produtos, setProdutos] = useState(
+    [] as {
+      code: string;
+      name: string;
+      qtd: string;
+      preco: string;
+    }[]
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [removeActive, setRemoveActive] = useState(false);
   const [open, setOpen] = useState(false);
-  const [subtotal] = useState("10,00");
   const [valorPago, setValorPago] = useState("");
+
+  const subtotalMemo = useMemo(() => {
+    return produtos.reduce((acc, item) => {
+      const preco = formatBRLCurrencytoNumber(item?.preco);
+      const qtd = formatBRLCurrencytoNumber(item?.qtd);
+      return formatToBRLCurrency(
+        (formatBRLCurrencytoNumber(acc) + preco * qtd).toFixed(2)
+      );
+    }, "0,00");
+  }, [produtos]);
 
   const trocoMemo = useMemo(() => {
     return (
       Math.round(
         (formatBRLCurrencytoNumber(valorPago) -
-          formatBRLCurrencytoNumber(subtotal)) *
+          formatBRLCurrencytoNumber(subtotalMemo)) *
           100
       ) / 100
     );
-  }, [subtotal, valorPago]);
+  }, [subtotalMemo, valorPago]);
 
   const openFinishSale = () => {
     setValorPago("");
@@ -60,6 +77,56 @@ const PointOfSales: React.FC = () => {
     timeoutRef.current = setTimeout(() => {
       inputRef.current?.focus();
     }, 3000);
+  };
+
+  const addProduct = async (code: string) => {
+    const product = await ProductService.getByCode(code);
+    setProdutos((prev) => [
+      ...prev,
+      {
+        code: product.id,
+        name: product.nome,
+        qtd: "1,000",
+        preco: formatToBRLCurrency(product.precoUnidade.toString()),
+      },
+    ]);
+  };
+
+  const removeProduct = (index: number) => {
+    setProdutos((prev) => {
+      if (index < 0 || index >= prev.length) return prev;
+      const newProducts = [...prev.slice(0, index), ...prev.slice(index + 1)];
+      if(newProducts.length === 0) {
+        setRemoveActive(false);
+      }
+      return newProducts;
+    });
+  };
+
+  const updateQuantity = (quantity: number) => {
+    setProdutos((prev) => {
+      const updatedProdutos = [...prev];
+      const lastItem = updatedProdutos[updatedProdutos.length - 1];
+      lastItem.qtd = quantity.toFixed(3).replace(".", ",");
+      return updatedProdutos;
+    });
+  };
+
+  const enter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+
+    const value = e.currentTarget.value.trim();
+
+    if (value.startsWith("x")) {
+      const quantity = Number(value.slice(1).replace(",", "."));
+      if (quantity > 0) {
+        updateQuantity(quantity);
+      }
+    } else if (value) {
+      addProduct(value);
+    }
+
+    e.currentTarget.value = "";
   };
 
   useEffect(() => {
@@ -136,9 +203,21 @@ const PointOfSales: React.FC = () => {
                   return (
                     <Flex direction="row" align="center" gap="2" key={index}>
                       <Box width="30px">
-                        <Text as="p" size="3">
-                          {(index + 1).toString().padStart(3, "000")}
-                        </Text>
+                        {removeActive && (
+                          <Button
+                            variant="surface"
+                            size="1"
+                            color="red"
+                            onClick={() => removeProduct(index)}
+                          >
+                            <MinusCircledIcon />
+                          </Button>
+                        )}
+                        {!removeActive && (
+                          <Text as="p" size="3">
+                            {(index + 1).toString().padStart(3, "000")}
+                          </Text>
+                        )}
                       </Box>
                       <ScrollLine oddColor="" evenColor="" index={index}>
                         <Text weight="regular">{item.name}</Text>
@@ -170,36 +249,41 @@ const PointOfSales: React.FC = () => {
             justify="between"
           >
             <Card>
-              <Flex direction="column" mb='4'>
+              <Flex direction="column" mb="4">
                 <Text as="div" size="3" weight="bold">
                   Item
                 </Text>
                 <TextField.Root
+                  autoFocus
                   ref={inputRef}
                   type="text"
-                  maxLength={12}
                   style={{
                     height: "80px",
-                    fontSize: "50px",
+                    fontSize: "36px",
                     textAlign: "end",
                   }}
                   onBlur={handleBlur}
-                  onChange={(e) =>
-                    setValorPago(formatToBRLCurrency(e.target.value))
-                  }
+                  onKeyUp={enter}
                 ></TextField.Root>
               </Flex>
               <Flex direction="row" gap="4">
                 <Card style={{ flex: 1 }}>
                   <Flex direction="column" gap="4">
                     <Flex justify="between" align="center" flexGrow="1">
-                      <Text size="3">Impressão da nota resumo</Text>
-                      <Tooltip content='Aperte a tecla "P" para imprimir resumo de compra'>
-                        <Kbd>P</Kbd>
-                      </Tooltip>
+                      <Text size="3">Remover item</Text>
                     </Flex>
-                    <Button variant="surface">
-                      Imprimir <DownloadIcon />
+                    <Button
+                      variant="surface"
+                      disabled={produtos.length === 0 && !removeActive}
+                      onClick={() => setRemoveActive((prev) => !prev)}
+                    >
+                      {removeActive ? (
+                        <>Salvar</>
+                      ) : (
+                        <>
+                          Remover item <MinusCircledIcon />
+                        </>
+                      )}
                     </Button>
                   </Flex>
                 </Card>
@@ -214,6 +298,7 @@ const PointOfSales: React.FC = () => {
                     </Flex>
                     <Dialog.Trigger>
                       <Button
+                        disabled={produtos.length === 0 || removeActive}
                         variant="solid"
                         style={{ background: "var(--accent-a9)" }}
                         onClick={openFinishSale}
@@ -246,7 +331,7 @@ const PointOfSales: React.FC = () => {
                     SUBTOTAL
                   </Text>
                   <Text size="9" style={{ color: "var(--accent-a10)" }}>
-                    R$ {subtotal}
+                    R$ {subtotalMemo}
                   </Text>
                 </Flex>
               </Card>
@@ -354,3 +439,19 @@ const PointOfSales: React.FC = () => {
 };
 
 export default PointOfSales;
+
+{
+  /* <Card style={{ flex: 1 }}>
+  <Flex direction="column" gap="4">
+    <Flex justify="between" align="center" flexGrow="1">
+      <Text size="3">Impressão da nota resumo</Text>
+      <Tooltip content='Aperte a tecla "P" para imprimir resumo de compra'>
+        <Kbd>P</Kbd>
+      </Tooltip>
+    </Flex>
+    <Button variant="surface">
+      Imprimir <DownloadIcon />
+    </Button>
+  </Flex>
+</Card>; */
+}

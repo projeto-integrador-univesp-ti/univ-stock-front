@@ -4,13 +4,19 @@ export interface Product {
   id: string;
   nome: string;
   marca: string;
+  codigo: string;
   quantidade: number;
-  precoUnidade: number;
+  preco_unidade: number;
   perecivel: boolean;
-  idMedida: number;
+  id_medida: number;
 }
 
 const ProductService = {
+  async getByCode(code: string): Promise<Product> {
+    const response = await api.get<{ data: Product }>(`/product/${code}`);
+    return response.data.data;
+  },
+
   async getAll(): Promise<Product[]> {
     const response = await api.get<{ data: Product[] }>("/product");
     return response.data.data;
