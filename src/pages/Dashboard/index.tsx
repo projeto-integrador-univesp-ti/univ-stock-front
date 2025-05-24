@@ -58,8 +58,8 @@ const Dashboard2: React.FC = () => {
 
             {dueDate === DueDate.MONTH && (
               <Flex direction="column" py="2" pr="3" gap="2">
-                {Array(10)
-                  .fill({ name: "Leite Parmalat", dueDate: "30/04/2025" })
+                {Array(1)
+                  .fill({ name: "Leite Parmalat 1L", dueDate: "30/05/2025" })
                   .map((item, index) => {
                     return (
                       <React.Fragment key={index}>
@@ -77,7 +77,7 @@ const Dashboard2: React.FC = () => {
 
         <Card>
           <Flex justify="between" align="center" mb="3">
-            <Heading as="h2" size="2">Alertas gerais</Heading>
+            <Heading as="h2" size="2">Produtos com estoque baixo</Heading>
           </Flex>
           <ScrollArea type="auto" scrollbars="vertical" style={{ height: 200 }}>
             <Flex
@@ -89,7 +89,7 @@ const Dashboard2: React.FC = () => {
             >
               <ValueNoneIcon width="25" height="25" color="gray" />
               <Text as="p" size="3" color="gray">
-                Sem novos alertas!
+                Sem produtos com estoque baixo!
               </Text>
             </Flex>
           </ScrollArea>

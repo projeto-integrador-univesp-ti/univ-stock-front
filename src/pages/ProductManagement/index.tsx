@@ -40,6 +40,7 @@ const ProductManagement = () => {
     null
   );
   const [productAdded, setProductAdded] = useState({} as Product);
+  const [perishable, setPerishable] = useState(false);
 
   const getProducts = async () => {
     const allProducts = await ProductService.getAll();
@@ -155,7 +156,10 @@ const ProductManagement = () => {
                   <Table.Row key={index}>
                     <Table.RowHeaderCell>{product.nome}</Table.RowHeaderCell>
                     <Table.Cell>{product.marca}</Table.Cell>
-                    <Table.Cell>{product.quantidade}</Table.Cell>
+                    <Table.Cell>
+                      {product.quantidade}&nbsp;
+                      {measures.find((i) => i.id === product.idMedida)?.sigla}
+                    </Table.Cell>
                   </Table.Row>
                 ))}
 
@@ -217,15 +221,10 @@ const ProductManagement = () => {
               <Form.Label>Marca</Form.Label>
               <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
                 <Form.Control
-                  minLength={1}
                   maxLength={45}
                   className="rt-reset rt-TextFieldInput"
-                  required
                 />
               </div>
-              <Form.Message className="error-message" match="valueMissing">
-                Marca do produto é obrigatório.
-              </Form.Message>
               <Form.Message className="error-message" match="tooLong">
                 Marca não pode ultrapassar 45 caracteres.
               </Form.Message>
@@ -278,7 +277,7 @@ const ProductManagement = () => {
 
             <Form.Field name="precoUnidade">
               <Form.Label>
-                Preço por{" "}
+                Preço por&nbsp;
                 {measures
                   .find((item) => item.id.toString() === measure)
                   ?.nome?.toLowerCase()}
@@ -304,6 +303,24 @@ const ProductManagement = () => {
                 Quantidade não pode ultrapassar 45 caracteres.
               </Form.Message>
             </Form.Field>
+
+            <Form.Field name="codigo">
+              <Form.Label>Código do produto/ Código de barras</Form.Label>
+              <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
+                <Form.Control
+                  minLength={1}
+                  maxLength={45}
+                  className="rt-reset rt-TextFieldInput"
+                  required
+                />
+              </div>
+              <Form.Message className="error-message" match="valueMissing">
+                Código é obrigatório.
+              </Form.Message>
+              <Form.Message className="error-message" match="tooLong">
+                Código não pode ultrapassar 45 caracteres.
+              </Form.Message>
+            </Form.Field>
           </Grid>
 
           <Separator orientation="horizontal" size="4" my="4" />
@@ -317,8 +334,11 @@ const ProductManagement = () => {
                 <Switch
                   name="perecivel"
                   size="2"
-                  value={"true"}
-                  defaultChecked
+                  value="true"
+                  checked={perishable}
+                  onCheckedChange={(checked) => {
+                    setPerishable(checked);
+                  }}
                 />
                 <Form.Label htmlFor="aa">Produto perecível</Form.Label>
               </Flex>
@@ -326,46 +346,46 @@ const ProductManagement = () => {
 
             <div />
 
-            <Form.Field name="lote">
-              <Form.Label>Número do lote</Form.Label>
-              <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
-                <Form.Control
-                  minLength={5}
-                  maxLength={45}
-                  className="rt-reset rt-TextFieldInput"
-                  required
-                />
-              </div>
-              <Form.Message className="error-message" match="valueMissing">
-                Número do lote é obrigatório.
-              </Form.Message>
-              <Form.Message className="error-message" match="tooShort">
-                Número do lote deve ter no mínimo 5 caracteres.
-              </Form.Message>
-              <Form.Message className="error-message" match="tooLong">
-                Número do lote não pode ultrapassar 45 caracteres.
-              </Form.Message>
-            </Form.Field>
+            {perishable && (
+              <>
+                <Form.Field name="lote">
+                  <Form.Label>Número do lote</Form.Label>
+                  <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
+                    <Form.Control
+                      maxLength={45}
+                      className="rt-reset rt-TextFieldInput"
+                      required
+                    />
+                  </div>
+                  <Form.Message className="error-message" match="tooShort">
+                    Número do lote deve ter no mínimo 5 caracteres.
+                  </Form.Message>
+                  <Form.Message className="error-message" match="tooLong">
+                    Número do lote não pode ultrapassar 45 caracteres.
+                  </Form.Message>
+                </Form.Field>
 
-            <Form.Field name="dataValidade">
-              <Form.Label>Data de validade</Form.Label>
-              <DatePicker
-                name="dataValidade"
-                popperPlacement="bottom-start"
-                className="datepicker"
-                dateFormat="dd/MM/yyyy"
-                selected={startDate}
-                onChange={(date) => {
-                  console.log(date);
-                  setStartDate(date);
-                }}
-                locale="pt-BR"
-              />
-            </Form.Field>
+                <Form.Field name="dataValidade">
+                  <Form.Label>Data de validade</Form.Label>
+                  <DatePicker
+                    name="dataValidade"
+                    popperPlacement="bottom-start"
+                    className="datepicker"
+                    dateFormat="dd/MM/yyyy"
+                    selected={startDate}
+                    onChange={(date) => {
+                      console.log(date);
+                      setStartDate(date);
+                    }}
+                    locale="pt-BR"
+                  />
+                </Form.Field>
+              </>
+            )}
           </Grid>
 
           <Form.Submit>
-            <Text size='3'>Adicionar</Text>
+            <Text size="3">Adicionar</Text>
           </Form.Submit>
         </Form.Root>
       )}

@@ -6,9 +6,9 @@ export interface Product {
   marca: string;
   codigo: string;
   quantidade: number;
-  preco_unidade: number;
+  precoUnidade: number;
   perecivel: boolean;
-  id_medida: number;
+  idMedida: number;
 }
 
 const ProductService = {

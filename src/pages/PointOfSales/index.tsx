@@ -84,7 +84,7 @@ const PointOfSales: React.FC = () => {
     setProdutos((prev) => [
       ...prev,
       {
-        code: product.id,
+        code: product.codigo,
         name: product.nome,
         qtd: "1,000",
         preco: formatToBRLCurrency(product.precoUnidade.toString()),
@@ -316,13 +316,10 @@ const PointOfSales: React.FC = () => {
                 <Flex direction="column" align="center" gap="4">
                   <Flex justify="between" align="center" gap="4">
                     <Text as="div" size="3" weight="bold">
-                      DESCONTO
+                      QTD. ITENS
                     </Text>
-                    <Tooltip content='Aperte a tecla "D" para aplicar um desconto'>
-                      <Kbd>D</Kbd>
-                    </Tooltip>
                   </Flex>
-                  <Text size="9">R$ 0,00</Text>
+                  <Text size="9">{produtos.length}</Text>
                 </Flex>
               </Card>
               <Card>
