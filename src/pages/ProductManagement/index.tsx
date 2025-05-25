@@ -112,6 +112,7 @@ const ProductManagement = () => {
       } as unknown as Product);
 
       setSucessAdded(true);
+      setProducts(state => [...state, product])
       setProductAdded(product);
     } catch {
       setErrorAdded(true);
