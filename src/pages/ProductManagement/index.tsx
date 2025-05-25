@@ -212,6 +212,25 @@ const ProductManagement = () => {
                     </Table.Row>
                   ))}
 
+                {!loading && products?.length === 0 && (
+                  <Table.Row>
+                    <Table.Cell colSpan={4}>
+                      <Flex
+                        gap="2"
+                        direction="column"
+                        height="100%"
+                        align="center"
+                        justify="center"
+                      >
+                        <ValueNoneIcon width="25" height="25" color="gray" />
+                        <Text as="p" size="3" color="gray">
+                          Estoque sem produtos cadastrado!
+                        </Text>
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+
                 {!loading && productsFiltered?.length === 0 && (
                   <Table.Row>
                     <Table.Cell colSpan={4}>
