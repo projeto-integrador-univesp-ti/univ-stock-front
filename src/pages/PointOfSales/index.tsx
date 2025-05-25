@@ -42,7 +42,7 @@ const PointOfSales: React.FC = () => {
 
   const [removeActive, setRemoveActive] = useState(false);
   const [openFinish, setOpenFinish] = useState(false);
-  const [sucessSale, setSucessSale] = useState(true);
+  const [sucessSale, setSucessSale] = useState(false);
   const [valorPago, setValorPago] = useState("");
   const [measures, setMeasures] = useState([] as Measure[]);
 

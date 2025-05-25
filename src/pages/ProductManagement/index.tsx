@@ -5,11 +5,13 @@ import {
   Grid,
   Select,
   Separator,
+  Spinner,
   Switch,
   Table,
   TabNav,
   Text,
   TextField,
+  Tooltip,
 } from "@radix-ui/themes";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { Form } from "radix-ui";
@@ -17,7 +19,11 @@ import { SyntheticEvent, useEffect, useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "./styles.css";
 
-import { MagnifyingGlassIcon, ValueNoneIcon } from "@radix-ui/react-icons";
+import {
+  MagnifyingGlassIcon,
+  UpdateIcon,
+  ValueNoneIcon,
+} from "@radix-ui/react-icons";
 import { Measure, MeasureService } from "../../service/MeasureService";
 import { Product, ProductService } from "../../service/ProductService";
 
@@ -33,6 +39,8 @@ const ProductManagement = () => {
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [measures, setMeasures] = useState([] as Measure[]);
   const [measure, setMeasure] = useState("5");
+  const [loading, setLoading] = useState(false);
+  const [blockUpdate, setBlockUpdate] = useState(false);
   const [sucessAdded, setSucessAdded] = useState(false);
   const [errorAdded, setErrorAdded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,8 +51,28 @@ const ProductManagement = () => {
   const [perishable, setPerishable] = useState(false);
 
   const getProducts = async () => {
+    setLoading(true);
     const allProducts = await ProductService.getAll();
     setProducts(allProducts);
+    setLoading(false);
+  };
+
+  const fakePromise = () => {
+    return new Promise((res) => {
+      setTimeout(() => res(true), 1000);
+    });
+  };
+
+  const updateProducts = async () => {
+    setLoading(true);
+    setBlockUpdate(true);
+    const [allProducts] = await Promise.all([
+      ProductService.getAll(),
+      fakePromise(),
+    ]);
+    setProducts(allProducts);
+    setLoading(false);
+    setTimeout(() => setBlockUpdate(false), 10000);
   };
 
   const initHash = () => {
@@ -87,6 +115,8 @@ const ProductManagement = () => {
       setProductAdded(product);
     } catch {
       setErrorAdded(true);
+    } finally {
+      setBlockUpdate(false);
     }
   };
 
@@ -113,36 +143,52 @@ const ProductManagement = () => {
           Buscar
         </TabNav.Link>
         <TabNav.Link href={Action.ADD_EDIT} active={hash === Action.ADD_EDIT}>
-          Adicionar/Editar
+          Adicionar
         </TabNav.Link>
       </TabNav.Root>
 
       {hash === Action.SEARCH && (
         <>
-          <TextField.Root
-            style={{ margin: "1rem 0" }}
-            placeholder="Buscar produto por nome..."
-            onChange={(event) => {
-              const value = event.target.value;
-              const filteredProducts = products.filter((product) =>
-                product.nome.toLowerCase().includes(value.toLowerCase())
-              );
-              if (value) {
-                setProductsFiltered(filteredProducts);
-              } else {
-                setProductsFiltered(null);
-              }
-            }}
-          >
-            <TextField.Slot>
-              <MagnifyingGlassIcon height="16" width="16" />
-            </TextField.Slot>
-          </TextField.Root>
+          <Flex align="center" gap="4">
+            <TextField.Root
+              style={{ margin: "1rem 0", flex: "1" }}
+              placeholder="Buscar produto por código ou nome..."
+              onChange={(event) => {
+                const value = event.target.value;
+                const filteredProducts = products.filter(
+                  (product) =>
+                    product.nome.toLowerCase().includes(value.toLowerCase()) ||
+                    product.codigo.toLowerCase().includes(value.toLowerCase())
+                );
+                if (value) {
+                  setProductsFiltered(filteredProducts);
+                } else {
+                  setProductsFiltered(null);
+                }
+              }}
+            >
+              <TextField.Slot>
+                <MagnifyingGlassIcon height="16" width="16" />
+              </TextField.Slot>
+            </TextField.Root>
+
+            <Tooltip content="Atualizar lista de produtos">
+              <Button
+                variant="ghost"
+                style={{ padding: "8px" }}
+                disabled={blockUpdate}
+                onClick={updateProducts}
+              >
+                <UpdateIcon />
+              </Button>
+            </Tooltip>
+          </Flex>
 
           <Flex direction="column" gap="4">
             <Table.Root>
               <Table.Header>
                 <Table.Row>
+                  <Table.ColumnHeaderCell>Código</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>
                     Nome do produto
                   </Table.ColumnHeaderCell>
@@ -152,20 +198,22 @@ const ProductManagement = () => {
               </Table.Header>
 
               <Table.Body>
-                {(productsFiltered || products).map((product, index) => (
-                  <Table.Row key={index}>
-                    <Table.RowHeaderCell>{product.nome}</Table.RowHeaderCell>
-                    <Table.Cell>{product.marca}</Table.Cell>
-                    <Table.Cell>
-                      {product.quantidade}&nbsp;
-                      {measures.find((i) => i.id === product.idMedida)?.sigla}
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
+                {!loading &&
+                  (productsFiltered || products).map((product, index) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{product.codigo}</Table.Cell>
+                      <Table.Cell>{product.nome}</Table.Cell>
+                      <Table.Cell>{product.marca || '-'}</Table.Cell>
+                      <Table.Cell>
+                        {product.quantidade}&nbsp;
+                        {measures.find((i) => i.id === product.idMedida)?.sigla}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
 
-                {productsFiltered?.length === 0 && (
+                {!loading && productsFiltered?.length === 0 && (
                   <Table.Row>
-                    <Table.Cell colSpan={3}>
+                    <Table.Cell colSpan={4}>
                       <Flex
                         gap="2"
                         direction="column"
@@ -177,6 +225,28 @@ const ProductManagement = () => {
                         <Text as="p" size="3" color="gray">
                           Produto filtrado não encontrado!
                         </Text>
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+
+                {loading && (
+                  <Table.Row>
+                    <Table.Cell colSpan={4}>
+                      <Flex
+                        gap="2"
+                        direction="column"
+                        height="100%"
+                        align="center"
+                        justify="center"
+                      >
+                        <Spinner
+                          size="3"
+                          style={{
+                            height: 28,
+                            color: "var(--accent-indicator)",
+                          }}
+                        />
                       </Flex>
                     </Table.Cell>
                   </Table.Row>
