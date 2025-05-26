@@ -13,22 +13,24 @@ import {
   Tooltip,
 } from "@radix-ui/themes";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PurchaseInvoice } from "../../components/PurchaseInvoice";
 import { ScrollLine } from "../../components/ScrollLine";
 import { TopBarInformation } from "../../components/TopBarInformation";
+import { Measure, MeasureService } from "../../service/MeasureService";
 import { ProductService } from "../../service/ProductService";
-import { useReactToPrint } from "react-to-print";
+import { SalesService } from "../../service/SalesService";
 import {
   formatBRLCurrencytoNumber,
   formatToBRLCurrency,
   normalizeDecimal,
 } from "../../utils/formatCurrency";
 import { exitFullScreen, fullScreen } from "../../utils/fullScreen";
-import { PurchaseInvoice } from "../../components/PurchaseInvoice";
-import { Measure, MeasureService } from "../../service/MeasureService";
 
 const PointOfSales: React.FC = () => {
   const [produtos, setProdutos] = useState(
     [] as {
+      id: string;
+      idMedida: string;
       code: string;
       name: string;
       sigla: string;
@@ -43,11 +45,9 @@ const PointOfSales: React.FC = () => {
   const [removeActive, setRemoveActive] = useState(false);
   const [openFinish, setOpenFinish] = useState(false);
   const [sucessSale, setSucessSale] = useState(false);
+  const [saleId, setSaleId] = useState("");
   const [valorPago, setValorPago] = useState("");
   const [measures, setMeasures] = useState([] as Measure[]);
-
-  const componentPrintRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({ contentRef: componentPrintRef });
 
   const subtotalMemo = useMemo(() => {
     return produtos.reduce((acc, item) => {
@@ -74,12 +74,32 @@ const PointOfSales: React.FC = () => {
     setOpenFinish(true);
   };
 
-  const closeFinishSale = () => {
+  const cancelFinishSale = () => {
+    setSaleId('');
+    setSucessSale(false);
+    setOpenFinish(false);
+  }
+
+  const closeFinishSale = async () => {
     const productsToDecrease = produtos.map((item) => ({
       codigo: item.code,
       quantidade: formatBRLCurrencytoNumber(item.qtd),
     }));
     ProductService.decrease(productsToDecrease);
+
+    const productsToSaveSale = produtos.map((item) => ({
+      idProduto: item.id,
+      idMedida: Number(item.idMedida),
+      quantidade: formatBRLCurrencytoNumber(item.qtd),
+      precoUnidade: formatBRLCurrencytoNumber(item.preco),
+    }));
+    const { idVenda } = await SalesService.saveSale({
+      troco: trocoMemo,
+      valorPago: formatBRLCurrencytoNumber(valorPago.toString()),
+      valorTotal: formatBRLCurrencytoNumber(subtotalMemo.toString()),
+      produtos: productsToSaveSale,
+    });
+    setSaleId(idVenda);
     setSucessSale(true);
     setOpenFinish(false);
   };
@@ -99,6 +119,8 @@ const PointOfSales: React.FC = () => {
     setProdutos((prev) => [
       ...prev,
       {
+        id: product.id,
+        idMedida: product.idMedida.toString(),
         code: product.codigo,
         sigla: measures.find((item) => item.id === product.idMedida)!.sigla,
         name: product.nome,
@@ -459,7 +481,7 @@ const PointOfSales: React.FC = () => {
                 <Button
                   variant="surface"
                   color="gray"
-                  onClick={closeFinishSale}
+                  onClick={cancelFinishSale}
                 >
                   Cancelar
                 </Button>
@@ -478,24 +500,18 @@ const PointOfSales: React.FC = () => {
         </Dialog.Root>
       </Flex>
 
-      <div ref={componentPrintRef}>
+      {saleId && (
         <PurchaseInvoice
           open={sucessSale}
+          saleId={saleId}
+          // saleId={"174821670568436794118599426290229793803817701" }
           onClickClose={onClosePurchaseVoice}
           invoiceNumber="123456789"
           companyName="Mini Mercadinho Thais"
           companyCNPJ="43.780.540/0001-48"
           companyAddress="Rua Dr. Lucas Nogueira Garcez, 1336, Jd. Suarão - Itanhaém - SP"
-          date={new Date()}
-          items={produtos.map((item) => ({
-            description: item.name,
-            acronym: item.sigla.toString(),
-            quantity: formatBRLCurrencytoNumber(item.qtd),
-            unitPrice: formatBRLCurrencytoNumber(item.preco),
-          }))}
-          onClickPrint={reactToPrintFn}
         />
-      </div>
+      )}
     </>
   );
 };

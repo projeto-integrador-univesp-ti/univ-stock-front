@@ -1,74 +1,87 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./styles.css";
 import QRCode from "react-qr-code";
-import { Button, Flex, Spinner } from "@radix-ui/themes";
-import { Cross2Icon, DownloadIcon } from "@radix-ui/react-icons";
+import { Button, Flex, Spinner, Text, TextField } from "@radix-ui/themes";
+import {
+  Cross2Icon,
+  DownloadIcon,
+  MagnifyingGlassIcon,
+} from "@radix-ui/react-icons";
 import {
   formatBRLCurrencytoNumber,
   formatToBRLCurrency,
 } from "../../utils/formatCurrency";
-
-interface PurchaseItem {
-  description: string;
-  quantity: number;
-  acronym: string;
-  unitPrice: number;
-}
+import { Sale, SalesService } from "../../service/SalesService";
+import { useReactToPrint } from "react-to-print";
 
 interface PurchaseInvoiceProps {
   open: boolean;
+  saleId: string;
   invoiceNumber: string;
   companyName: string;
   companyCNPJ: string;
   companyAddress: string;
-  date: Date;
-  items: PurchaseItem[];
-  onClickPrint: () => void;
   onClickClose: () => void;
 }
 
-const formatDateTime = (date: Date): string => {
-  const d = date.toLocaleDateString("pt-BR");
-  const t = date.toLocaleTimeString("pt-BR");
-  return `${d} ${t}`;
-};
-
 const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = ({
   open,
-  invoiceNumber,
+  saleId,
   companyName,
   companyCNPJ,
   companyAddress,
-  date,
-  items,
-  onClickPrint,
   onClickClose,
 }) => {
-  const [spinnerActive, setSpinnerActive] = useState(true);
+  const componentPrintRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef: componentPrintRef });
+  const [spinnerActive, setSpinnerActive] = useState(false);
+  const [input, setInput] = useState("");
+  const [sale, setSale] = useState({
+    id: "",
+    valorPago: "",
+    valorTotal: "",
+    troco: "",
+    dataVenda: "",
+    produtos: [],
+  } as Sale);
 
-  const total = items.reduce((acc, item) => {
-    return formatToBRLCurrency(
-      (
-        formatBRLCurrencytoNumber(acc) +
-        item?.unitPrice * item?.quantity
-      ).toFixed(2)
-    );
-  }, "0,00");
+  const fakePromise = (): Promise<boolean> => {
+    return new Promise((res) => {
+      setTimeout(() => res(true), 3000);
+    });
+  };
+
+  const getSale = async (id?: string) => {
+    try {
+      setSpinnerActive(true);
+      const [saleData] = await Promise.all([
+        SalesService.getSale(id ?? saleId),
+        fakePromise(),
+      ]);
+
+      setSale(saleData);
+    } catch {
+      setInput("");
+    } finally {
+      setSpinnerActive(false);
+    }
+  };
 
   useEffect(() => {
-    setSpinnerActive(open)
-    setTimeout(() => {
-      setSpinnerActive(false);
-    }, 1500);
-  }, [open]);
+    if (!saleId) {
+      return;
+    }
+    getSale();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div
+      ref={componentPrintRef}
       className="purchase-invoice"
       style={{ display: open ? "block" : "none" }}
     >
       <div className="menu-container no-print">
-        <Button onClick={onClickPrint} variant="solid" size="1">
+        <Button onClick={reactToPrintFn} variant="solid" size="1">
           Imprimir <DownloadIcon />
         </Button>
         <Button onClick={onClickClose} variant="solid" size="1">
@@ -89,7 +102,39 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = ({
           />
         </Flex>
       )}
-      {!spinnerActive && (
+
+      {!spinnerActive && !sale.id && (
+        <Flex
+          direction="column"
+          width="100vw"
+          height="200px"
+          align="center"
+          justify="center"
+          gap="4"
+        >
+          <Text as="p" size="3">
+            Nota não encontrada, busque novamente!
+          </Text>
+          <Flex gap="3">
+            <TextField.Root
+              placeholder="Número da compra…"
+              style={{ width: "60vw" }}
+              onChange={(event) => {
+                setInput(event.target.value);
+              }}
+            >
+              <TextField.Slot style={{ margin: "1rem 0", flex: "1" }}>
+                <MagnifyingGlassIcon height="16" width="16" />
+              </TextField.Slot>
+            </TextField.Root>
+            <Button variant="solid" size="2" onClick={() => getSale(input)}>
+              Bucar
+            </Button>
+          </Flex>
+        </Flex>
+      )}
+
+      {!spinnerActive && sale.id && (
         <div className="invoice zig-zag">
           <h1>Nota de compra</h1>
           <div className="invoice-header">
@@ -103,7 +148,7 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = ({
             <div>
               <strong>Data da compra</strong>
               <br />
-              {formatDateTime(date)}
+              {sale.dataVenda}
             </div>
           </div>
 
@@ -112,26 +157,33 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = ({
               <tr>
                 <th>Descrição</th>
                 <th className="right">Qtd</th>
-                <th>Unid.</th>
-                <th>Valor Unit.</th>
-                <th>Total</th>
+                <th className="right">Unid.</th>
+                <th className="right">Valor Unit.</th>
+                <th className="right">Total</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((item, index) => {
-                const itemTotal = item.quantity * item.unitPrice;
+              {sale.produtos.map((item, index) => {
+                const itemTotal = formatToBRLCurrency(
+                  (
+                    formatBRLCurrencytoNumber(item.quantidade) *
+                    formatBRLCurrencytoNumber(item.precoUnidade)
+                  ).toFixed(2)
+                );
                 return (
                   <tr key={index}>
-                    <td>{item.description}</td>
+                    <td>{item.nome.toUpperCase()}</td>
                     <td width="40" className="right">
-                      {item.quantity.toFixed(3).replace(".", ",")}
+                      {item.quantidade}
                     </td>
-                    <td width="40">{item.acronym}</td>
-                    <td width="80">
-                      {formatToBRLCurrency(item.unitPrice.toFixed(2))}
+                    <td width="40" className="right">
+                      {item.sigla.toUpperCase()}
                     </td>
-                    <td width="80">
-                      {formatToBRLCurrency(itemTotal.toFixed(2))}
+                    <td width="80" className="right">
+                      {item.precoUnidade}
+                    </td>
+                    <td width="80" className="right">
+                      {itemTotal}
                     </td>
                   </tr>
                 );
@@ -139,16 +191,39 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = ({
             </tbody>
             <tfoot>
               <tr className="border-none">
-                <td colSpan={4} className="right">
+                <td>
                   <strong>Qtd. total de itens</strong>
                 </td>
-                <td>{items.length.toString().padStart(3, "000")}</td>
-              </tr>
-              <tr>
                 <td colSpan={4} className="right">
-                  <strong>Total Geral</strong>
+                  {sale.produtos.length.toString().padStart(3, "000")}
                 </td>
-                <td>R$ {formatToBRLCurrency(total.toString())}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <strong>Valor total</strong>
+                </td>
+                <td colSpan={4} className="right">
+                  R$ {formatToBRLCurrency(sale.valorTotal.toString())}
+                </td>
+              </tr>
+
+              <tr className="border-none">
+                <td>
+                  <strong>Pagamento total</strong>
+                </td>
+                <td colSpan={4} className="right">
+                  R$ {sale.valorPago}
+                </td>
+              </tr>
+
+              <tr className="border-none">
+                <td>
+                  <strong>Troco</strong>
+                </td>
+                <td colSpan={4} className="right">
+                  R$ {sale.troco}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -158,11 +233,11 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = ({
               size={256}
               level="H"
               style={{ height: "auto", maxWidth: "150px", width: "150px" }}
-              value={invoiceNumber}
+              value={sale.id}
             />
           </div>
 
-          <div className="invoice-footer">Nota nº {invoiceNumber}</div>
+          <div className="invoice-footer">{sale.id}</div>
         </div>
       )}
     </div>

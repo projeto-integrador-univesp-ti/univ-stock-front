@@ -97,6 +97,15 @@ const TopBarSite: React.FC = () => {
               </Menubar.Item>
               <Menubar.Separator className={styles.Separator} />
               <Menubar.Sub>
+                <Menubar.SubTrigger className={styles.SubTrigger} disabled>
+                  Notas de vendas
+                  <div className={styles.RightSlot}>
+                    <ChevronRightIcon />
+                  </div>
+                </Menubar.SubTrigger>
+              </Menubar.Sub>
+
+              <Menubar.Sub>
                 <Menubar.SubTrigger className={styles.SubTrigger}>
                   Relatórios
                   <div className={styles.RightSlot}>
@@ -131,7 +140,10 @@ const TopBarSite: React.FC = () => {
               sideOffset={5}
               alignOffset={0}
             >
-              <Menubar.Item className={`${styles.Item} inset`} onClick={redirectProductManagement}>
+              <Menubar.Item
+                className={`${styles.Item} inset`}
+                onClick={redirectProductManagement}
+              >
                 Gestão de produtos <div className={styles.RightSlot}>F3</div>
               </Menubar.Item>
               <Menubar.Item className={`${styles.Item} inset`} disabled>
