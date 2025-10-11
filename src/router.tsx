@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import PointOfSales from "./pages/PointOfSales";
 import ProductManagement from "./pages/ProductManagement";
 import Settings from "./pages/Settings";
+import Receipt from "./pages/Receipt";
 
 // Templates
 import PrincipalTemplate from "./template/PrincipalTemplate";
@@ -20,6 +21,7 @@ enum Path {
   ProductManagement = "/product-management#search",
   PointOfSale = "/point-of-sale",
   Settings = "/settings",
+  Receipt = '/receipt',
   NotFound = "/not-found",
 }
 
@@ -45,6 +47,7 @@ const Router: React.FC = () => {
             <Route path="point-of-sale" element={<PointOfSales />} />
             <Route path="product-management" element={<ProductManagement />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="receipt" element={<Receipt />} />
           </Route>
 
           <Route path={Path.NotFound} element={<NotFound />} />

@@ -15,6 +15,7 @@ const TopBarSite: React.FC = () => {
   const redirectSettings = () => navigate(Path.Settings);
   const redirectPointOfSale = () => navigate(Path.PointOfSale);
   const redirectProductManagement = () => navigate(Path.ProductManagement);
+  const redirectReceipt = () => navigate(Path.Receipt);
 
   const { appearance } = useGlobalContext();
 
@@ -97,12 +98,12 @@ const TopBarSite: React.FC = () => {
               </Menubar.Item>
               <Menubar.Separator className={styles.Separator} />
               <Menubar.Sub>
-                <Menubar.SubTrigger className={styles.SubTrigger} disabled>
+                <Menubar.Item
+                  className={styles.Item}
+                  onClick={redirectReceipt}
+                >
                   Notas de vendas
-                  <div className={styles.RightSlot}>
-                    <ChevronRightIcon />
-                  </div>
-                </Menubar.SubTrigger>
+                </Menubar.Item>
               </Menubar.Sub>
 
               <Menubar.Sub>

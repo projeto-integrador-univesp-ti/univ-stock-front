@@ -75,10 +75,10 @@ const PointOfSales: React.FC = () => {
   };
 
   const cancelFinishSale = () => {
-    setSaleId('');
+    setSaleId("");
     setSucessSale(false);
     setOpenFinish(false);
-  }
+  };
 
   const closeFinishSale = async () => {
     const productsToDecrease = produtos.map((item) => ({
@@ -174,6 +174,7 @@ const PointOfSales: React.FC = () => {
   const onClosePurchaseVoice = () => {
     setSucessSale(false);
     newSale();
+    setSaleId("");
   };
 
   const initiMeasures = async () => {
@@ -209,6 +210,7 @@ const PointOfSales: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
       exitFullScreen();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -504,12 +506,7 @@ const PointOfSales: React.FC = () => {
         <PurchaseInvoice
           open={sucessSale}
           saleId={saleId}
-          // saleId={"174821670568436794118599426290229793803817701" }
           onClickClose={onClosePurchaseVoice}
-          invoiceNumber="123456789"
-          companyName="Mini Mercadinho Thais"
-          companyCNPJ="43.780.540/0001-48"
-          companyAddress="Rua Dr. Lucas Nogueira Garcez, 1336, Jd. Suarão - Itanhaém - SP"
         />
       )}
     </>
