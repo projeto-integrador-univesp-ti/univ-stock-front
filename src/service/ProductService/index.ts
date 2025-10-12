@@ -31,6 +31,11 @@ const ProductService = {
     const response = await api.post<{ data: Product }>("/product", product);
     return response.data.data;
   },
+ 
+  async update(product: Product ): Promise<Product> {
+    const response = await api.put<{ data: Product }>(`/product/${product.id}`, product);
+    return response.data.data;
+  },
 
   async decrease(products: ProductDecrease[]): Promise<{ message: string }> {
     const response = await api.patch<{ data: { message: string } }>("/product/decrease", {

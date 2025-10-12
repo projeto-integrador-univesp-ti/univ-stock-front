@@ -21,11 +21,11 @@ const TopBarSite: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "f2") {
+      if (e?.key?.toLowerCase?.() === "f2") {
         e.preventDefault();
         redirectPointOfSale();
       }
-      if (e.key.toLowerCase() === "f3") {
+      if (e?.key?.toLowerCase?.() === "f3") {
         e.preventDefault();
         redirectProductManagement();
       }

@@ -21,6 +21,7 @@ import "./styles.css";
 
 import {
   MagnifyingGlassIcon,
+  Pencil2Icon,
   UpdateIcon,
   ValueNoneIcon,
 } from "@radix-ui/react-icons";
@@ -42,12 +43,14 @@ const ProductManagement = () => {
   const [loading, setLoading] = useState(false);
   const [blockUpdate, setBlockUpdate] = useState(false);
   const [sucessAdded, setSucessAdded] = useState(false);
+  const [sucessEdited, setSucessEdited] = useState(false);
   const [errorAdded, setErrorAdded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [productToEdit, setProductToEdit] = useState<Product>();
   const [productsFiltered, setProductsFiltered] = useState<Product[] | null>(
     null
   );
-  const [productAdded, setProductAdded] = useState({} as Product);
+  const [productAddedEdited, setProductAddedEdited] = useState({} as Product);
   const [perishable, setPerishable] = useState(false);
 
   const getProducts = async () => {
@@ -95,30 +98,53 @@ const ProductManagement = () => {
       document.forms?.namedItem("add-product")?.reset();
     }
     setSucessAdded(false);
+    setSucessEdited(false);
     setErrorAdded(false);
-    setProductAdded({} as Product);
+    setProductAddedEdited({} as Product);
+    setProductToEdit({} as Product);
+    window.location.hash = Action.SEARCH;
   };
 
   const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
     try {
-      const product = await ProductService.add({
+      const newProduct = {
         ...data,
         idMedida: Number(data.idMedida as string),
         quantidade: Number((data.quantidade as string).replace(",", ".")),
         precoUnidade: Number((data.precoUnidade as string).replace(",", ".")),
         perecivel: !!data.perecivel,
-      } as unknown as Product);
+      } as unknown as Product;
 
-      setSucessAdded(true);
-      setProducts(state => [...state, product])
-      setProductAdded(product);
+      if (productToEdit) {
+        const productEdited = await ProductService.update({
+          ...productToEdit,
+          ...newProduct,
+        });
+        setSucessEdited(true);
+        setProducts((state) =>
+          state.map((product) => {
+            return product.id === productEdited.id ? productEdited : product;
+          })
+        );
+        setProductAddedEdited(productEdited);
+      } else {
+        const productAdded = await ProductService.add(newProduct);
+        setSucessAdded(true);
+        setProducts((state) => [...state, productAdded]);
+        setProductAddedEdited(productAdded);
+      }
     } catch {
       setErrorAdded(true);
     } finally {
       setBlockUpdate(false);
     }
+  };
+
+  const toEdit = (product: Product) => {
+    setProductToEdit(product);
+    window.location.hash = Action.ADD_EDIT;
   };
 
   useEffect(() => {
@@ -130,6 +156,9 @@ const ProductManagement = () => {
     initHash();
     const handleHashChange = () => {
       setHash(window.location.hash);
+      if (window.location.hash === Action.SEARCH) {
+        setProductToEdit(undefined);
+      }
     };
     window.addEventListener("hashchange", handleHashChange);
     return () => {
@@ -144,7 +173,7 @@ const ProductManagement = () => {
           Buscar
         </TabNav.Link>
         <TabNav.Link href={Action.ADD_EDIT} active={hash === Action.ADD_EDIT}>
-          Adicionar
+          {productToEdit ? 'Editando' : 'Adicionar'}
         </TabNav.Link>
       </TabNav.Root>
 
@@ -195,6 +224,7 @@ const ProductManagement = () => {
                   </Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Marca</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Quantidade</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell width="0" />
                 </Table.Row>
               </Table.Header>
 
@@ -204,10 +234,20 @@ const ProductManagement = () => {
                     <Table.Row key={index}>
                       <Table.Cell>{product.codigo}</Table.Cell>
                       <Table.Cell>{product.nome}</Table.Cell>
-                      <Table.Cell>{product.marca || '-'}</Table.Cell>
+                      <Table.Cell>{product.marca || "-"}</Table.Cell>
                       <Table.Cell>
                         {product.quantidade}&nbsp;
                         {measures.find((i) => i.id === product.idMedida)?.sigla}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Button
+                          variant="surface"
+                          size="1"
+                          color="blue"
+                          onClick={() => toEdit(product)}
+                        >
+                          Editar <Pencil2Icon />
+                        </Button>
                       </Table.Cell>
                     </Table.Row>
                   ))}
@@ -297,6 +337,7 @@ const ProductManagement = () => {
                   maxLength={45}
                   className="rt-reset rt-TextFieldInput"
                   required
+                  defaultValue={productToEdit?.nome}
                 />
               </div>
               <Form.Message className="error-message" match="valueMissing">
@@ -313,6 +354,7 @@ const ProductManagement = () => {
                 <Form.Control
                   maxLength={45}
                   className="rt-reset rt-TextFieldInput"
+                  defaultValue={productToEdit?.marca}
                 />
               </div>
               <Form.Message className="error-message" match="tooLong">
@@ -331,6 +373,9 @@ const ProductManagement = () => {
                   pattern="^\d+(,\d{1,2})?$"
                   className="rt-reset rt-TextFieldInput"
                   required
+                  defaultValue={productToEdit?.quantidade
+                    ?.toString()
+                    ?.replace?.(".", ",")}
                 />
               </div>
               <Form.Message className="error-message" match="patternMismatch">
@@ -348,7 +393,7 @@ const ProductManagement = () => {
               <Form.Label>Unidade de medida</Form.Label>
               <Select.Root
                 name="idMedida"
-                defaultValue={measure}
+                defaultValue={productToEdit?.idMedida?.toString?.() ?? measure}
                 onValueChange={setMeasure}
               >
                 <Select.Trigger />
@@ -381,6 +426,9 @@ const ProductManagement = () => {
                   pattern="^\d+(,\d{1,2})?$"
                   className="rt-reset rt-TextFieldInput"
                   required
+                  defaultValue={productToEdit?.precoUnidade
+                    ?.toString()
+                    ?.replace?.(".", ",")}
                 />
               </div>
               <Form.Message className="error-message" match="patternMismatch">
@@ -402,6 +450,7 @@ const ProductManagement = () => {
                   maxLength={45}
                   className="rt-reset rt-TextFieldInput"
                   required
+                  defaultValue={productToEdit?.codigo}
                 />
               </div>
               <Form.Message className="error-message" match="valueMissing">
@@ -474,22 +523,34 @@ const ProductManagement = () => {
             )}
           </Grid>
 
-          <Form.Submit>
-            <Text size="3">Adicionar</Text>
+          <Form.Submit asChild >
+            <Button>
+
+            <Text size="3">{productToEdit ? "Editar" : "Adicionar"}</Text>
+            </Button>
           </Form.Submit>
         </Form.Root>
       )}
 
-      <Dialog.Root open={sucessAdded || errorAdded}>
+      <Dialog.Root open={sucessAdded || sucessEdited || errorAdded}>
         <Dialog.Content size="1" maxWidth="500px">
           <Flex gap="4" direction="column" align="center">
             {sucessAdded && (
               <Text as="p" trim="both" size="3" align="center">
                 O produto
                 <Text as="span" size="3" weight="bold" color="green">
-                  &nbsp;({productAdded.nome})&nbsp;
+                  &nbsp;({productAddedEdited.nome})&nbsp;
                 </Text>
                 foi adicionado com sucesso!
+              </Text>
+            )}
+            {sucessEdited && (
+              <Text as="p" trim="both" size="3" align="center">
+                O produto
+                <Text as="span" size="3" weight="bold" color="blue">
+                  &nbsp;({productAddedEdited.nome})&nbsp;
+                </Text>
+                foi editado com sucesso!
               </Text>
             )}
             {errorAdded && (
