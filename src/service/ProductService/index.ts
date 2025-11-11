@@ -6,6 +6,7 @@ export interface Product {
   marca: string;
   codigo: string;
   quantidade: number;
+  quantidadeMinimaEstoque: number;
   precoUnidade: number;
   perecivel: boolean;
   idMedida: number;

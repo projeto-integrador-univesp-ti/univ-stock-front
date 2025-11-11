@@ -44,7 +44,7 @@ const ProductManagement = () => {
   const [blockUpdate, setBlockUpdate] = useState(false);
   const [sucessAdded, setSucessAdded] = useState(false);
   const [sucessEdited, setSucessEdited] = useState(false);
-  const [errorAdded, setErrorAdded] = useState(false);
+  const [errorAdded, setErrorAdded] = useState<string | false>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [productToEdit, setProductToEdit] = useState<Product>();
   const [productsFiltered, setProductsFiltered] = useState<Product[] | null>(
@@ -94,15 +94,21 @@ const ProductManagement = () => {
   };
 
   const resetForm = () => {
+    const hasError = errorAdded;
+
     if (!errorAdded) {
       document.forms?.namedItem("add-product")?.reset();
     }
+
     setSucessAdded(false);
     setSucessEdited(false);
     setErrorAdded(false);
-    setProductAddedEdited({} as Product);
-    setProductToEdit({} as Product);
-    window.location.hash = Action.SEARCH;
+
+    if (!hasError) {
+      setProductAddedEdited({} as Product);
+      setProductToEdit({} as Product);
+      window.location.hash = Action.SEARCH;
+    }
   };
 
   const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
@@ -135,8 +141,12 @@ const ProductManagement = () => {
         setProducts((state) => [...state, productAdded]);
         setProductAddedEdited(productAdded);
       }
-    } catch {
-      setErrorAdded(true);
+    } catch (error) {
+      if (((error as { status?: number })?.status ?? 0) === 409) {
+        setErrorAdded("Código do produto (Código de barras) já existente!");
+      } else {
+        setErrorAdded("O produto não pode ser adicionado, tente novamente!");
+      }
     } finally {
       setBlockUpdate(false);
     }
@@ -173,7 +183,7 @@ const ProductManagement = () => {
           Buscar
         </TabNav.Link>
         <TabNav.Link href={Action.ADD_EDIT} active={hash === Action.ADD_EDIT}>
-          {productToEdit ? 'Editando' : 'Adicionar'}
+          {productToEdit ? "Editando" : "Adicionar"}
         </TabNav.Link>
       </TabNav.Root>
 
@@ -460,6 +470,21 @@ const ProductManagement = () => {
                 Código não pode ultrapassar 45 caracteres.
               </Form.Message>
             </Form.Field>
+
+            <Form.Field name="quantidadeMinimaEstoque">
+              <Form.Label>Quantidade mínima em estoque</Form.Label>
+              <div className="rt-TextFieldRoot rt-r-size-2 rt-variant-surface rt-reset rt-TextFieldInput">
+                <Form.Control
+                  type="number"
+                  min={0}
+                  className="rt-reset rt-TextFieldInput"
+                  defaultValue={productToEdit?.quantidadeMinimaEstoque}
+                />
+              </div>
+              <Form.Message className="error-message" match="rangeUnderflow">
+                Quantidade mínima em estoque não pode ser negativa
+              </Form.Message>
+            </Form.Field>
           </Grid>
 
           <Separator orientation="horizontal" size="4" my="4" />
@@ -504,10 +529,10 @@ const ProductManagement = () => {
                   </Form.Message>
                 </Form.Field>
 
-                <Form.Field name="dataValidade">
+                <Form.Field name="dtValidade">
                   <Form.Label>Data de validade</Form.Label>
                   <DatePicker
-                    name="dataValidade"
+                    name="dtValidade"
                     popperPlacement="bottom-start"
                     className="datepicker"
                     dateFormat="dd/MM/yyyy"
@@ -523,16 +548,15 @@ const ProductManagement = () => {
             )}
           </Grid>
 
-          <Form.Submit asChild >
+          <Form.Submit asChild>
             <Button>
-
-            <Text size="3">{productToEdit ? "Editar" : "Adicionar"}</Text>
+              <Text size="3">{productToEdit ? "Editar" : "Adicionar"}</Text>
             </Button>
           </Form.Submit>
         </Form.Root>
       )}
 
-      <Dialog.Root open={sucessAdded || sucessEdited || errorAdded}>
+      <Dialog.Root open={sucessAdded || sucessEdited || Boolean(errorAdded)}>
         <Dialog.Content size="1" maxWidth="500px">
           <Flex gap="4" direction="column" align="center">
             {sucessAdded && (
@@ -555,7 +579,7 @@ const ProductManagement = () => {
             )}
             {errorAdded && (
               <Text as="p" trim="both" size="3" align="center">
-                O produto não pode ser adicionado, tente novamente!
+                {errorAdded}
               </Text>
             )}
             <Flex gap="3" justify="end">
