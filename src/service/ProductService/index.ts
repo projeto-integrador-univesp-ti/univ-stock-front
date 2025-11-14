@@ -2,14 +2,14 @@ import { api } from "./..";
 
 export interface Product {
   id: string;
-  nome: string;
-  marca: string;
   codigo: string;
+  idMedida: number;
+  marca: string;
+  nome: string;
+  perecivel: boolean;
+  precoUnidade: number;
   quantidade: number;
   quantidadeMinimaEstoque: number;
-  precoUnidade: number;
-  perecivel: boolean;
-  idMedida: number;
 }
 
 export interface ProductDecrease {
