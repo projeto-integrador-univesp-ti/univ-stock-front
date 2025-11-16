@@ -17,9 +17,15 @@ export interface ExpiringBatchItem {
   quantidade: string;
 }
 
+export interface MinItem {
+  nome: string;
+  quantidade: string;
+  minimo: string;
+}
 export interface ExpiringBatches {
   semana: ExpiringBatchItem[];
   mes: ExpiringBatchItem[];
+  estoqueBaixo: MinItem[];
 }
 
 const BatchService = {
@@ -29,9 +35,7 @@ const BatchService = {
   },
 
   async getExpiring(): Promise<ExpiringBatches> {
-    const response = await api.get<ExpiringBatches>(
-      "/batch/expiring"
-    );
+    const response = await api.get<ExpiringBatches>("/batch/expiring");
     return response.data;
   },
 

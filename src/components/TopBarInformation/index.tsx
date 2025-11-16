@@ -8,11 +8,11 @@ interface TopBarInformationProps {
 const TopBarInformation: React.FC<TopBarInformationProps> = (props) => {
   const { title } = props;
   return (
-    <Flex direction="column" gap="3" justify="start" height='48px'>
+    <Flex direction="column" gap="3" justify="start" height="48px">
       <Card>
         <Flex justify="between">
           <Text as="p" size="3" style={{ width: "10%" }}>
-            Maria Silva
+            Administrador
           </Text>
           <Text
             as="p"

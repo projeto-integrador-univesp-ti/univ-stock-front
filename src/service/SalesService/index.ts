@@ -1,20 +1,23 @@
 import { api } from "..";
 
 export type Sale = {
-  id: string,
+  id: string;
   valorTotal: string;
   valorPago: string;
   troco: string;
   dataVenda: string;
-  produtos: ProductSale[];
 };
 
-export type ProductSale = {
+type Product = {
   nome: string;
   sigla: string;
   quantidade: string;
   precoUnidade: string;
 };
+
+export interface SaleWithProducts extends Sale {
+  produtos: Product[];
+}
 
 export type SaleSave = {
   valorTotal: number;
@@ -38,8 +41,20 @@ const SalesService = {
     return response.data.data;
   },
 
-  async getSale(id: string): Promise<Sale> {
-    const response = await api.get<{ data: Sale }>(`/sales/${id}`);
+  async getSale(id: string): Promise<SaleWithProducts | undefined> {
+    const response = await api.get<{ data: SaleWithProducts[] }>(
+      `/sales?id=${id}`
+    );
+    return response.data.data[0];
+  },
+
+  async getSaleByDate(
+    dataInicio: string,
+    dataFim: string
+  ): Promise<SaleWithProducts[]> {
+    const response = await api.get<{ data: SaleWithProducts[] }>(
+      `/sales?dataInicio=${dataInicio}&dataFim=${dataFim}`
+    );
     return response.data.data;
   },
 };
