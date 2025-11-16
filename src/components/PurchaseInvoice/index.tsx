@@ -6,7 +6,7 @@ import {
 import { Button, Flex, Spinner, Text } from "@radix-ui/themes";
 import React, { useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Sale, SalesService } from "../../service/SalesService";
+import { SalesService, SaleWithProducts } from "../../service/SalesService";
 import { SalesReceipt } from "../SalesReceipt";
 import "./styles.css";
 
@@ -22,11 +22,11 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = (props) => {
   const reactToPrintFn = useReactToPrint({ contentRef: componentPrintRef });
   const [spinnerActive, setSpinnerActive] = useState(true);
   const [error, setError] = useState(false);
-  const [sale, setSale] = useState({} as Sale);
+  const [sale, setSale] = useState({} as SaleWithProducts);
 
   const fakePromise = (): Promise<boolean> => {
     return new Promise((res) => {
-      setTimeout(() => res(true), 2000);
+      setTimeout(() => res(true), 1500);
     });
   };
 
@@ -38,7 +38,7 @@ const PurchaseInvoice: React.FC<PurchaseInvoiceProps> = (props) => {
         fakePromise(),
       ]);
 
-      setSale(saleData);
+      setSale(saleData!);
     } catch {
       setError(true);
     } finally {
