@@ -1,17 +1,17 @@
+import { Cross2Icon, DownloadIcon } from "@radix-ui/react-icons";
+import { Button } from "@radix-ui/themes";
 import React, { useRef } from "react";
-import "./styles.css";
+import QRCode from "react-qr-code";
+import { useReactToPrint } from "react-to-print";
+import { SaleWithProducts } from "../../service/SalesService";
 import {
   formatBRLCurrencytoNumber,
   formatToBRLCurrency,
 } from "../../utils/formatCurrency";
-import QRCode from "react-qr-code";
-import { Sale } from "../../service/SalesService";
-import { useReactToPrint } from "react-to-print";
-import { Button } from "@radix-ui/themes";
-import { Cross2Icon, DownloadIcon } from "@radix-ui/react-icons";
+import "./styles.css";
 
 interface SalesReceiptProps {
-  sale: Sale;
+  sale: SaleWithProducts;
   onClose?: () => void;
   fullScreen?: boolean;
 }
@@ -147,3 +147,4 @@ const SalesReceipt: React.FC<SalesReceiptProps> = (props) => {
 };
 
 export { SalesReceipt };
+
