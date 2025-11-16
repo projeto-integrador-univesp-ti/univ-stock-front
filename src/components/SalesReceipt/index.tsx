@@ -83,10 +83,10 @@ const SalesReceipt: React.FC<SalesReceiptProps> = (props) => {
                     {item.sigla.toUpperCase()}
                   </td>
                   <td width="80" className="right">
-                    {item.precoUnidade}
+                    R$ {item.precoUnidade}
                   </td>
                   <td width="80" className="right">
-                    {itemTotal}
+                    R$ {itemTotal}
                   </td>
                 </tr>
               );
